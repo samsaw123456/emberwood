@@ -1,53 +1,60 @@
 # Emberwood playtest notes
 
-The expanded campaign has three chapters: Emberwood, Flooded Mill, and High
-Canopy, ending with Old Croak. It contains nine required acorns, 72 optional gems,
-and three hidden fireflies. Verification uses Godot 4.5.1 on Linux with a fixed
-60 Hz simulation. Test saves are isolated from player settings by
-[the test runner](../tools/run_game_tests.py).
+The adventure has three chapters—Emberwood, Flooded Mill, and High Canopy—with
+nine required acorns, 72 optional gems, three hidden fireflies, and Old Croak.
+Verification uses Godot 4.5.1 on Linux, normally at 60 Hz. Tests use isolated
+saved data through [the runner](../tools/run_game_tests.py).
 
 ## Game checklist
 
-- **Core loop:** title, original forest, chapter result/Continue, mill, canopy,
-  boss, final gate, campaign results, and replay. Each gate requires that
-  chapter's three acorns; the final gate also requires Old Croak's defeat.
-- **Physics:** ground and edges, acceleration/stopping, variable-height double
-  jump, jump limits, coyote time, buffered landing, both-axis platform carry,
-  turnaround, crumble/fall/regeneration, and reset use real Godot physics tests.
-  Both new routes were traversed through input. Slopes and vertical camera
-  scrolling are outside this level design.
-- **Interaction:** keyboard movement/jumps, mouse menus/settings, contact pickups,
-  spikes, critters, mushroom bounce, and repeated pickups/retries. Boss checks
-  cover landing tells, leaps, ripples, valid falling stomps, vulnerable windows,
-  three fox hearts, invulnerability after hits, defeat, and encounter reset.
-  Inventory and combat weapons are not part of the game.
-- **Navigation:** all required acorns and gaps are reachable through movement
-  input. Campfires mark safe retry points; the canopy critter cannot patrol into
-  its nearby camp. Boss entry closes the arena boundary, which clears on victory
-  and resets on retry. Camera bounds follow the current chapter's width.
-- **State:** title, playing, paused, retrying, chapter complete, and won. Chapter
-  transitions remove old level entities and preserve campaign totals. Pausing or
-  losing focus freezes play, retry countdowns, platforms, and boss attacks.
-  Focus return waits for explicit resume. Restart clears the entire campaign.
+- **Core loop and rules:** title, forest, chapter result/Continue, mill, canopy,
+  boss, final gate, results, and replay. Each gate requires three acorns; the
+  final gate also requires defeating Old Croak. Retries are unlimited.
+- **Physics:** acceleration/stopping, variable-height double jump, jump limits,
+  coyote time, buffered landing, moving-platform carry/turnaround, crumble and
+  recovery. Dash respects walls, cooldown, one airborne use, held-input rules,
+  jump interruption, pause, and reset. Dash traveled 99.2 pixels at both 30 and
+  120 Hz. Slopes and vertical camera scrolling are outside this level design.
+- **Interaction and rewards:** Shift dashes from the start. The second Emberwood
+  campfire awards a bow; the third awards armor. Rewards equip immediately and
+  can be removed independently in pause. J fires once per press with a cooldown.
+  Arrows use swept collision, hit the first obstruction, and cannot cross thin
+  walls beside the fox. Left/right shots, moving/collapsed platforms, misses,
+  range cleanup, and simultaneous turn/shoot were checked. Shooting during a
+  dash follows its locked facing direction.
+- **Defense and combat:** armor blocks one spike, critter, or boss hit and gives
+  recovery time; falls still cause retries. A new camp or retry recharges armor;
+  returning to an old camp or reequipping does not. Old Croak takes one arrow
+  or falling stomp per resting phase. Three hits defeat him. Guarded phases
+  reject arrows, and stomps retain their bounce.
+- **Navigation:** all required acorns and gates are reachable through movement
+  input. Campfires mark safe retry positions. The boss arena closes only when
+  its acorns are collected, and reopens on defeat. Camera bounds follow the
+  chapter. Later checkpoints grant any earlier equipment rewards that were missed.
+- **State:** title, playing, paused, retrying, chapter complete, and won. Pause
+  and focus loss freeze physics, dash/shot cooldowns, arrows, and boss attacks.
+  Returning focus requires explicit resume. Retries preserve equipment choices
+  and restore armor. Chapters preserve choices and remove old projectiles.
+  Replay resets rewards, counters, level entities, and temporary combat state.
 - **Feel and accessibility:** visible keyboard focus, native buttons/toggles,
-  readable controls, persistent sound/gentle-motion settings, forgiving collision
-  margins, and visible boss hints. Boss health uses filled/empty marks as well as
-  color. Pixel art stays crisp while UI fonts use linear sampling when resized.
-- **Polish and discovery:** licensed SunnyLand artwork, distinct forest/mill/canopy
-  scenery, a small pixel title, bundled DejaVu Sans text, correct per-chapter
-  and campaign counts, checkpoints, and three optional secrets. The rejected
-  field-guide/paper treatment, serif headline, monospaced prose, and decorative
-  uppercase/slash labels have been removed from the interface.
-  See [visual direction](DESIGN.md) for the typography and layout choices.
-- **Robustness and performance:** native rendering and an isolated X11 software
-  renderer were exercised. The new interface was inspected at 1152×648 and at
-  800×600 with letterboxing. Physics-driven route input is independent of rendering
-  cadence. Multi-hour sessions, macOS, Windows, gamepads, and touch are untested.
+  readable controls, sound/gentle-motion settings, forgiving collision margins,
+  and clear boss hints. Armor has ready/spent text as well as a color change.
+  Bow and armor appear on the fox in either facing direction. The HUD, menus,
+  and title were inspected at 1152×648 and 800×600 with letterboxing.
+- **Polish and discovery:** licensed SunnyLand art, distinct forest/mill/canopy
+  scenery, small static pixel title, bundled DejaVu Sans, correct item counts,
+  campfire reward previews, and three hidden fireflies. Design constraints are
+  recorded in [DESIGN.md](DESIGN.md) and the project instructions.
+- **Robustness and performance:** native Intel OpenGL and X11 software rendering
+  were exercised. Tests cover repeated input, pause, retries, chapter cleanup,
+  replay, and settings reload. Multi-hour sessions, Windows, macOS, gamepads,
+  touch, and remappable controls remain untested or unsupported.
 
 ## Reproducing checks
 
-Run from the project root. Local lint tools are in
-`~/.local/share/phippy-tools/venv/bin/`:
+Run from the project root (`~/git/aie` on this computer). The launcher resolves
+its own directory and has no dependency on the previous project location.
+Local lint tools are in `~/.local/share/phippy-tools/venv/bin/`.
 
 ```sh
 ./start-game.sh --headless --editor --import --quit
@@ -61,89 +68,54 @@ python3 tools/run_game_tests.py
 git diff --check
 ```
 
-The runner includes `fox`, `platform`, `boss`, `game`, `route`, and `campaign`.
-An optional suite argument runs a subset, for example:
+The runner includes `fox`, `platform`, `boss`, `arrow`, `game`, `equipment`,
+`route`, and `campaign`. Pass suite names to run a subset. All eight suites
+passed. The game integration suite passed **166 checks**; equipment passed
+**83 checks** after correcting simultaneous turn-and-shoot input. Controller,
+platform, boss, projectile, original-route, and full-campaign tests also passed.
+Formatting, lint, shell syntax, resource import, and documentation links passed.
 
-```sh
-python3 tools/run_game_tests.py boss game campaign
-```
+## Graphical and native input evidence
 
-The expanded game integration suite passed **163 checks**, covering physical key
-mappings, menu flow, chapter progression and cleanup, pickups and totals,
-spikes/falls/retries, checkpoint recovery, boss health and arena boundaries,
-pause/focus handling, final-gate conditions, replay, and settings persistence.
-The campaign's saved best time is separate from the earlier single-level record.
+A complete graphical campaign at normal 60 Hz used movement, jump, dash,
+shooting, and menu input from the title through the ending. No teleport or
+progress changes were used. It naturally earned both rewards, shot a critter,
+toggled both equipment options with Tab/Space, and defeated Old Croak with
+**three arrow hits and no stomps**. Result: **01:31, zero retries, 41/72 gems,
+all nine acorns, all three fireflies, two hearts, and spent armor**. Enter replay
+cleared the equipment progression. The existing stomp-based campaign also
+passed with the added equipment, completing in 01:33 without retries.
 
-The controller and platform suites passed. The boss suite passed attack tells,
-leaps, shockwaves, pause, valid stomps, defeat, retry, and an input-driven battle.
-Both new chapter routes passed input-only traversal with all required acorns and
-no spike or fall failures. These route checks use real collision bodies and
-trigger crumbling platforms through foot contact.
+Native XTest input separately exercised Enter, Shift dash, movement into a
+reward campfire, J shooting, Escape pause/resume, Tab/Space equipment toggles,
+and R retry. Assertions checked the actual game state, arrow count, equipment,
+and checkpoint. A fixture positioned the fox just before the bow checkpoint;
+reward contact and subsequent actions used normal keyboard input. After the
+facing correction, native simultaneous left-and-J input fired left successfully.
 
-A complete **headless input-driven campaign** reached the ending in **01:33,
-with zero retries, all nine acorns, and two fox hearts remaining**. The route
-uses movement, jump, and menu input without teleporting the fox or changing
-collected progress. Separate tests deliberately exercise failure and recovery.
+A separate native fixture started with earned equipment beside spikes. Moving
+into the spikes spent armor without a retry. Remaining on them caused a real
+failure after protection expired; automatic retry restored the fox at camp with
+both items equipped and armor charged. Headless coverage additionally checks
+boss/critter damage, falls, paused projectiles/cooldowns, and repeated actions.
 
-## Graphical evidence
-
-The original forest was played using native X11 input: start, movement, double
-jumps, gems, raised platforms, the first gap, spike and critter failures,
-automatic retry, preserved treasure, pause, and settings. These remain part of
-the expanded campaign's regression coverage.
-
-The new mill and canopy were rendered and visually inspected. A standalone
-Old Croak encounter was played graphically through attack patterns, three valid
-stomps, and defeat. The title, pause, chapter transition, boss display, and
-results were rendered and inspected; Enter activation exercised
-Start and Continue. Bundled fonts and local license paths were verified.
-
-The consolidated run passed all six suites. A final HUD correction made the heart
-counter update immediately on damage, including zero hearts during retry; the
-expanded 163-check integration suite and graphical recovery fixture passed again. A complete **graphical campaign**
-at normal speed and 60 Hz reached the final gate in **01:33**, with **43/72 gems,
-all nine acorns, all three fireflies, zero retries, and two hearts remaining**.
-Screenshots were inspected at the title, both chapter transitions, both new
-levels, boss phases, and the ending. The route used input events only.
-
-A separate graphical arena fixture exercised an actual loss from ripple contact,
-pausing during an attack and during the retry countdown, checkpoint recovery,
-winning the restored encounter, and Enter-driven campaign replay. It passed.
-The fixture starts at the arena with its acorns collected; encounter actions
-and replay use normal game input. The first fixture attempt was interrupted by
-the temporary X server shutting down; rerunning with a dedicated display passed.
-Successful graphical runs logged only Xvfb input-method/VSync warnings.
-
-The interface was also reviewed at 800×600. Temporary game/display processes
-and isolated test saves were cleaned up; the playable native game is left open.
-Typography, GDScript/Python lint and format, shell syntax, documentation links,
-resource import, and artwork inventory checks passed.
-
-## Interface correction and project move
-
-The complete project now lives at `~/git/aie/`, with the starter's Git history
-preserved. The launcher resolves the new directory correctly, and source and
-documentation contain no absolute references to the previous project location.
-Global and project instructions explicitly record the rejected title treatment.
-
-After replacing that treatment, all six automated suites passed again, including
-the 163 integration checks. A fresh graphical campaign completed all three levels
-and Old Croak through movement, jump, and menu input in **01:33**, with **zero
-retries, 43/72 gems, all nine acorns, all three fireflies, and two hearts**.
-The graphical recovery fixture also passed attack/retry pausing, an actual loss,
-campfire recovery, the restored battle, victory, and Enter-driven replay.
-
-Native X11 input separately exercised Start, movement/jumps, pause/resume,
-Tab/Space settings controls, Continue, and Explore again. The revised title was
-inspected at 1152×648 and 800×600; controls were moved below the play scene to fix
-an overlap with world signs. Title, level results, live HUD, boss hints, pause,
-failure, and victory screenshots below show the replacement interface.
+Screenshots below were inspected. A tutorial/title overlap and a HUD/pause-button
+overlap were fixed during review. A temporary display interruption required one
+native rerun; the completed native runs passed. Graphical runs logged only the
+software display's input-method/VSync warnings. Test saves and display/game
+processes were cleaned up; the playable native game is left open.
 
 - [Title](screenshots/title.png)
 - [Title at 800×600](screenshots/title-800.png)
+- [Dash](screenshots/dash.png)
+- [Bow reward](screenshots/bow.png)
+- [Arrow in flight](screenshots/arrow.png)
+- [Armor reward](screenshots/armor.png)
+- [Equipment menu](screenshots/pause.png)
+- [Equipment at 800×600](screenshots/equipment-800.png)
+- [Armor blocking spikes](screenshots/armor-block.png)
+- [Automatic retry with equipment](screenshots/armor-retry.png)
 - [Flooded Mill](screenshots/mill.png)
 - [High Canopy](screenshots/canopy.png)
 - [Old Croak](screenshots/boss.png)
-- [Pause](screenshots/pause.png)
-- [Boss retry](screenshots/boss-retry.png)
 - [Campaign victory](screenshots/victory.png)

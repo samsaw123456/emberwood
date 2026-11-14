@@ -6,6 +6,7 @@ enum State { TITLE, PLAYING, PAUSED, RESPAWNING, WON, CHAPTER_COMPLETE }
 const SAVE_PATH := "user://emberwood.cfg"
 const VIEW_WIDTH := 1152.0
 const CHAPTER_TITLES := ForestChapters.TITLES
+const SHOT_COOLDOWN := 0.35
 
 var state := State.TITLE
 var state_before_pause := State.PLAYING
@@ -33,6 +34,9 @@ var camera_x := 0.0
 var particles: Array[Dictionary] = []
 var reduced_motion := false
 var last_zone := ""
+var equipment := ForestEquipment.new()
+var arrows: Node2D
+var shot_cooldown := 0.0
 
 
 func _ready() -> void:
@@ -43,6 +47,8 @@ func _ready() -> void:
 	fox.z_index = 10
 	add_child(fox)
 	fox.jumped.connect(_on_jump)
+	fox.dashed.connect(func() -> void: sound.play("dash"))
+	fox.shot_requested.connect(_shoot)
 	camera = Camera2D.new()
 	camera.position = Vector2(VIEW_WIDTH / 2, 324)
 	add_child(camera)
@@ -57,6 +63,7 @@ func _ready() -> void:
 	hud.pause_requested.connect(pause_run)
 	hud.sound_toggled.connect(_toggle_sound)
 	hud.motion_toggled.connect(_toggle_motion)
+	hud.equipment_toggled.connect(_toggle_equipment)
 	_load_chapter(0)
 	_load_settings()
 	hud.show_title(best_time)
@@ -86,6 +93,7 @@ func _notification(what: int) -> void:
 
 func start_run() -> void:
 	chapter_results.clear()
+	equipment.reset()
 	elapsed = 0.0
 	deaths = 0
 	_load_chapter(0)
@@ -109,6 +117,10 @@ func _load_chapter(index: int) -> void:
 	level = ForestLevel.new()
 	level.stage_index = index
 	add_child(level)
+	arrows = Node2D.new()
+	arrows.z_index = 12
+	level.add_child(arrows)
+	shot_cooldown = 0.0
 	if index == CHAPTER_TITLES.size() - 1:
 		boss = ForestBoss.new()
 		boss.position = Vector2(2970, ForestLevel.FLOOR_Y)
@@ -128,6 +140,7 @@ func _load_chapter(index: int) -> void:
 	gate_hint_cooldown = 0.0
 	particles.clear()
 	fox.reset_at(level.camps[0])
+	_sync_equipment()
 	camera_x = 0.0
 	last_zone = ""
 	hud.set_chapter(index, CHAPTER_TITLES[index], level.required_acorns)
@@ -185,6 +198,8 @@ func _set_state(next: State) -> void:
 		boss.active = state == State.PLAYING
 	fox.sprite.speed_scale = 0.0 if state == State.PAUSED else 1.0
 	backdrop.set_process(state != State.PAUSED)
+	for arrow in arrows.get_children():
+		arrow.active = state == State.PLAYING
 
 
 func _physics_process(delta: float) -> void:
@@ -198,6 +213,7 @@ func _physics_process(delta: float) -> void:
 	invincible_left = maxf(0, invincible_left - delta)
 	mushroom_cooldown = maxf(0, mushroom_cooldown - delta)
 	gate_hint_cooldown = maxf(0, gate_hint_cooldown - delta)
+	shot_cooldown = maxf(0, shot_cooldown - delta)
 	fox.modulate.a = 1.0
 	if invincible_left > 0:
 		fox.modulate.a = (
@@ -239,14 +255,15 @@ func _check_hazards() -> void:
 	for spike in level.spikes:
 		# Inset the rectangular artwork so brushing a triangle's corner is forgiving.
 		if bounds.intersects(spike.grow(-3)):
+			if _absorb_hit():
+				return
 			_respawn("Ouch! Jump over the spikes.")
 			return
 	for critter in level.critters:
 		if critter.out:
 			continue
 		var pos := level.critter_position(critter)
-		var critter_bounds := Rect2(pos - Vector2(25, 29), Vector2(50, 29))
-		if bounds.intersects(critter_bounds):
+		if bounds.intersects(level.critter_bounds(critter)):
 			if fox.velocity.y > 40 and fox.position.y < pos.y - 12:
 				critter.out = true
 				fox.velocity.y = -440
@@ -254,6 +271,8 @@ func _check_hazards() -> void:
 				_burst(pos - Vector2(0, 20), Color("d7b2df"), 12)
 				sound.play("bounce")
 			else:
+				if _absorb_hit():
+					return
 				_respawn("Boop! Hop over critters, or bounce on top.")
 				return
 
@@ -305,10 +324,7 @@ func _check_platforms() -> void:
 func _check_camps_and_gate() -> void:
 	for index in level.camps.size():
 		if index > level.camp_index and fox.position.distance_to(level.camps[index]) < 50:
-			level.camp_index = index
-			sound.play("camp")
-			_burst(level.camps[index] - Vector2(0, 25), Color("ffc887"), 20)
-			hud.toast("Campfire lit! Your treasure is safe.")
+			_activate_camp(index)
 	if absf(fox.position.x - level.gate.x) < 42 and fox.position.y > 410:
 		if level.taken_acorns.size() == level.acorns.size() and level.gate_open:
 			if stage_index < CHAPTER_TITLES.size() - 1:
@@ -331,6 +347,7 @@ func _respawn(message: String) -> void:
 		return
 	deaths += 1
 	_set_state(State.RESPAWNING)
+	_clear_arrows()
 	respawn_left = 0.8
 	fox.show_pose(&"hurt")
 	_burst(fox.position - Vector2(0, 24), Color("f2b694"), 15)
@@ -349,6 +366,9 @@ func _finish_respawn() -> void:
 			arena_wall.queue_free()
 			arena_wall = null
 	fox.reset_at(level.camps[level.camp_index])
+	equipment.recharge()
+	_sync_equipment()
+	shot_cooldown = 0.0
 	invincible_left = 1.0
 	mushroom_cooldown = 0.0
 	camera_x = clampf(fox.position.x - 380, 0, level.world_width - VIEW_WIDTH)
@@ -418,6 +438,7 @@ func _refresh_hud() -> void:
 		zone,
 		fox.jumps_left
 	)
+	hud.update_equipment(equipment, fox.can_dash())
 
 
 func format_time(seconds: float) -> String:
@@ -437,6 +458,7 @@ func _toggle_motion(value: bool) -> void:
 	hud.reduced_motion = value
 	backdrop.reduced_motion = value
 	level.reduced_motion = value
+	fox.reduced_motion = value
 	if is_instance_valid(boss):
 		boss.reduced_motion = value
 	if value:
@@ -459,6 +481,7 @@ func _load_settings() -> void:
 	hud.reduced_motion = reduced_motion
 	backdrop.reduced_motion = reduced_motion
 	level.reduced_motion = reduced_motion
+	fox.reduced_motion = reduced_motion
 	if is_instance_valid(boss):
 		boss.reduced_motion = reduced_motion
 
@@ -478,7 +501,7 @@ func _update_boss_encounter() -> void:
 	if not boss_started and fox.position.x >= 2630 and level.taken_acorns.size() == 3:
 		boss_started = true
 		player_health = 3
-		level.camp_index = level.camps.size() - 1
+		_activate_camp(level.camps.size() - 1)
 		arena_wall = ForestPlatform.new()
 		arena_wall.setup(Rect2(2500, 250, 18, 286), "wall")
 		level.add_child(arena_wall)
@@ -492,6 +515,8 @@ func _update_boss_encounter() -> void:
 
 func _on_boss_hit() -> void:
 	if state != State.PLAYING or invincible_left > 0:
+		return
+	if _absorb_hit():
 		return
 	player_health -= 1
 	hud.update_boss(true, boss.health, player_health, boss.status_text())
@@ -518,3 +543,75 @@ func _on_boss_defeated() -> void:
 	sound.play("win")
 	hud.toast("Old Croak yields the path. The gate is just ahead.")
 	hud.update_boss(false, 0, player_health, "")
+
+
+func _activate_camp(index: int) -> void:
+	if index <= level.camp_index:
+		return
+	level.camp_index = index
+	var rewards := equipment.rewards_at(stage_index, index)
+	equipment.recharge()
+	_sync_equipment()
+	sound.play("camp")
+	_burst(level.camps[index] - Vector2(0, 25), Color("ffc887"), 20)
+	if rewards.has(&"armor"):
+		hud.toast("Leaf armor equipped! It blocks one hit. Choose equipment with Esc.")
+	elif rewards.has(&"bow"):
+		hud.toast("Bow earned and equipped! J shoots. Choose equipment with Esc.")
+	else:
+		hud.toast(
+			(
+				"Campfire lit! Armor recharged."
+				if equipment.is_unlocked(&"armor")
+				else "Campfire lit! Your treasure is safe."
+			)
+		)
+
+
+func _toggle_equipment(item_id: StringName, enabled: bool) -> void:
+	if state != State.PAUSED or not equipment.set_equipped(item_id, enabled):
+		return
+	_sync_equipment()
+
+
+func _sync_equipment() -> void:
+	fox.bow_equipped = equipment.is_equipped(&"bow")
+	fox.armor_equipped = equipment.is_equipped(&"armor")
+	fox.armor_charged = equipment.armor_charge > 0
+	fox.queue_redraw()
+	hud.update_equipment(equipment, fox.can_dash())
+
+
+func _absorb_hit() -> bool:
+	if not equipment.absorb_hit():
+		return false
+	invincible_left = 1.3
+	_sync_equipment()
+	sound.play("armor")
+	_burst(fox.position - Vector2(0, 24), Color("c7dcac"), 12)
+	hud.toast("Armor blocked the hit. Reach a new campfire to recharge it.")
+	return true
+
+
+func _shoot() -> void:
+	if state != State.PLAYING or not equipment.is_equipped(&"bow") or shot_cooldown > 0:
+		return
+	shot_cooldown = SHOT_COOLDOWN
+	var arrow := ForestArrow.new()
+	# Start inside the fox's bounds so a muzzle beside a thin wall cannot skip it.
+	arrow.setup(fox.position + Vector2(0, -20), fox.facing, level, boss, fox)
+	arrow.struck.connect(_on_arrow_struck)
+	arrows.add_child(arrow)
+	sound.play("shoot")
+
+
+func _on_arrow_struck(point: Vector2, target: String) -> void:
+	_burst(point, Color("bdcda2") if target == "blocked" else Color("d7b2df"), 5)
+	if target == "critter":
+		sound.play("bounce")
+
+
+func _clear_arrows() -> void:
+	for arrow in arrows.get_children():
+		arrows.remove_child(arrow)
+		arrow.queue_free()

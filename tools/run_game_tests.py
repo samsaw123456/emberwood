@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-SUITES = ("fox", "platform", "boss", "game", "route", "campaign")
+SUITES = ("fox", "platform", "boss", "arrow", "game", "equipment", "route", "campaign")
 
 
 def main() -> int:

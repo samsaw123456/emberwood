@@ -58,6 +58,7 @@ func _ready() -> void:
 	add_sign(3000, 400, "Keep moving", "Cracked bridges crumble")
 	add_sign(4050, 420, "Moonlit Grove", "The last acorn is up ahead")
 	add_sign(4660, 410, "Boing!", "Pink mushrooms bounce you")
+	add_sign(670, 370, "A quick dash", "Shift dashes in the direction you face.")
 	critters = [
 		{"home": Vector2(1370, 536), "range": 90.0, "speed": 1.5, "out": false},
 		{"home": Vector2(2670, 536), "range": 100.0, "speed": 1.7, "out": false},
@@ -253,6 +254,10 @@ func critter_position(critter: Dictionary) -> Vector2:
 	return critter.home + Vector2(sin(age * critter.speed) * critter.range, 0)
 
 
+func critter_bounds(critter: Dictionary) -> Rect2:
+	return Rect2(critter_position(critter) - Vector2(25, 29), Vector2(50, 29))
+
+
 func _physics_process(delta: float) -> void:
 	if active:
 		age += delta
@@ -352,6 +357,8 @@ func _draw_camps() -> void:
 		draw_line(pos + Vector2(-20, -4), pos + Vector2(20, -4), Color("a87e67"), 7)
 		draw_line(pos + Vector2(-14, -12), pos + Vector2(14, 2), Color("715550"), 6)
 		var lit := index <= camp_index
+		if not lit:
+			_draw_camp_reward(index, pos + Vector2(0, -66))
 		if lit:
 			draw_circle(pos + Vector2(0, -17), 36, Color(1, 0.62, 0.3, 0.12))
 			var flicker := 0.0 if reduced_motion else sin(age * 12) * 3
@@ -390,6 +397,50 @@ func _draw_critters() -> void:
 		draw_set_transform(pos, 0, Vector2(facing, 1))
 		draw_texture_rect_region(OPOSSUM, Rect2(-36, -50, 72, 56), Rect2(frame * 36, 0, 36, 28))
 		draw_set_transform(Vector2.ZERO)
+
+
+func _draw_camp_reward(index: int, pos: Vector2) -> void:
+	for item in ForestEquipment.ITEMS:
+		if item.chapter != stage_index or item.camp != index:
+			continue
+		if item.id == &"bow":
+			draw_polyline(
+				PackedVector2Array(
+					[
+						pos + Vector2(-5, -18),
+						pos + Vector2(8, -10),
+						pos + Vector2(12, 0),
+						pos + Vector2(8, 10),
+						pos + Vector2(-5, 18)
+					]
+				),
+				Color("e8b879"),
+				4
+			)
+			draw_line(pos + Vector2(-5, -18), pos + Vector2(-5, 18), Color("eee6c8"), 1)
+		else:
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						pos + Vector2(-14, -16),
+						pos + Vector2(14, -16),
+						pos + Vector2(12, 5),
+						pos + Vector2(0, 19),
+						pos + Vector2(-12, 5)
+					]
+				),
+				Color("9ab880")
+			)
+			draw_line(pos + Vector2(0, -12), pos + Vector2(0, 12), Color("e6d9a8"), 3)
+		draw_string(
+			ROUTE_FONT,
+			pos + Vector2(-60, -31),
+			item.name,
+			HORIZONTAL_ALIGNMENT_CENTER,
+			120,
+			16,
+			Color("f5e6be")
+		)
 
 
 func _draw_gate() -> void:

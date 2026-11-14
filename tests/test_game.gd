@@ -61,7 +61,9 @@ func _test_start_pause_input() -> void:
 		["pause", KEY_ESCAPE],
 		["pause", KEY_P],
 		["retry", KEY_R],
-		["mute", KEY_M]
+		["mute", KEY_M],
+		["dash", KEY_SHIFT],
+		["shoot", KEY_J]
 	]:
 		var mapped := false
 		for event: InputEvent in InputMap.action_get_events(pair[0]):
@@ -298,6 +300,8 @@ func _collect_acorns() -> void:
 
 func _test_boss_pause_and_retry() -> void:
 	_press_button("Ⅱ")
+	game._toggle_equipment(&"armor", false)
+	_check(not game.fox.armor_equipped, "Armor can be removed to test ordinary boss damage.")
 	var phase_time: float = game.boss.phase_time
 	var boss_position: Vector2 = game.boss.position
 	var wave_snapshot: Array = game.boss.waves.duplicate(true)

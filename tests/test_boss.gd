@@ -23,13 +23,14 @@ func _run() -> void:
 	Engine.physics_ticks_per_second = 180
 	await _test_waiting_and_telegraph()
 	await _test_damage_and_reset()
+	await _test_arrows()
 	await _test_input_battle()
 	_release()
 	if is_instance_valid(fixture):
 		fixture.queue_free()
 	if failures.is_empty():
 		print(
-			"PASS: boss telegraph, leap, waves, pause, valid stomps, defeat, retry and input battle."
+			"PASS: boss tells, leaps, waves, pause, stomps, arrows, defeat, retry and input battle."
 		)
 		quit(0)
 	else:
@@ -144,6 +145,27 @@ func _test_damage_and_reset() -> void:
 	_check(boss.phase == "waiting" and not boss.engaged, "Retry returns to entry state.")
 	_check(boss.position == Vector2(2970, 536), "Retry restores the original safe layout.")
 	_check(boss.waves.is_empty(), "Retry removes every previous attack.")
+
+
+func _test_arrows() -> void:
+	_make_fixture()
+	_check(not boss.arrow_hit(), "Arrows cannot start or damage a waiting boss.")
+	boss.begin()
+	_check(not boss.arrow_hit() and boss.health == 3, "A closed cap blocks arrows.")
+	_check(await _wait_for_phase("rest"), "The bow gets the same opening as a stomp.")
+	boss.active = false
+	_check(not boss.arrow_hit(), "Arrows cannot damage a paused boss.")
+	boss.active = true
+	var fox_velocity := fox.velocity
+	_check(boss.arrow_hit() and boss.health == 2, "A resting boss takes one arrow hit.")
+	_check(fox.velocity == fox_velocity, "An arrow hit does not bounce the distant fox.")
+	_check(not boss.arrow_hit() and boss.health == 2, "One opening accepts only one arrow.")
+	_check(boss.waves.is_empty(), "A valid arrow hit clears the attack's ripples.")
+	for hit in 2:
+		_check(await _wait_for_phase("rest"), "Later attacks also expose the boss to arrows.")
+		_check(boss.arrow_hit(), "Each later opening accepts an arrow.")
+	_check(boss.defeated and victory_count == 1, "Three arrows can finish the encounter.")
+	_check(not boss.arrow_hit() and boss.health == 0, "A defeated boss rejects extra damage.")
 
 
 func _test_input_battle() -> void:

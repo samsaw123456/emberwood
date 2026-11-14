@@ -72,7 +72,7 @@ func status_text() -> String:
 		"leap", "landing":
 			return "Jump over the ripples."
 		"rest":
-			return "His cap is open. Jump onto his head!"
+			return "His cap is open. Stomp him or shoot an arrow!"
 		"hurt":
 			return "He's getting his breath back."
 		"defeated":
@@ -150,7 +150,7 @@ func _check_contact() -> void:
 	if not is_instance_valid(fox) or not fox.active or fox.global_position.y > FLOOR_Y + 30:
 		return
 	var bounds := fox.body_bounds()
-	var body := Rect2(global_position - Vector2(BODY_SIZE.x / 2, BODY_SIZE.y), BODY_SIZE)
+	var body := body_bounds()
 	if phase == "rest" and bounds.intersects(body.grow(6)):
 		var above_head := fox.global_position.y <= body.position.y + 26
 		if fox.velocity.y > 30 and above_head:
@@ -171,9 +171,24 @@ func _check_contact() -> void:
 
 
 func _take_stomp() -> void:
-	health -= 1
 	fox.velocity.y = -560
 	fox.jumps_left = 1
+	_take_hit()
+
+
+func body_bounds() -> Rect2:
+	return Rect2(global_position - Vector2(BODY_SIZE.x / 2, BODY_SIZE.y), BODY_SIZE)
+
+
+func arrow_hit() -> bool:
+	if not active or not engaged or defeated or phase != "rest":
+		return false
+	_take_hit()
+	return true
+
+
+func _take_hit() -> void:
+	health -= 1
 	waves.clear()
 	_contact_cooldown = 0.65
 	_set_phase("hurt")

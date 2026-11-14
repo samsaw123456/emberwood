@@ -9,6 +9,7 @@ signal pause_requested
 signal next_requested
 signal sound_toggled(muted: bool)
 signal motion_toggled(reduced: bool)
+signal equipment_toggled(item_id: StringName, equipped: bool)
 
 const TEXT_FONT := preload("res://assets/fonts/DejaVuSans.ttf")
 const BOLD_FONT := preload("res://assets/fonts/DejaVuSans-Bold.ttf")
@@ -40,6 +41,10 @@ var _time_label: Label
 var _zone_label: Label
 var _jump_label: Label
 var _chapter_label: Label
+var _equipment_label: Label
+var _equipment: ForestEquipment
+var _equipment_toggles: Dictionary = {}
+var _equipment_details: Dictionary = {}
 var _toast_panel: PanelContainer
 var _toast_label: Label
 var _toast_tween: Tween
@@ -120,7 +125,7 @@ func show_title(best: float) -> void:
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	menu.add_child(title)
 	_center_text(menu, "Find 3 acorns in each level.", 20, 77)
-	_center_text(menu, "Cross the mill and canopy. Outjump Old Croak.", 18, 111, QUIET_TEXT)
+	_center_text(menu, "Reach campfires to earn a bow and leaf armor.", 18, 111, QUIET_TEXT)
 	var start := _button("Start adventure", true)
 	start.position = Vector2(222, 169)
 	start.size.x = 236
@@ -133,25 +138,48 @@ func show_title(best: float) -> void:
 	menu.add_child(settings)
 	var controls := _readability_band(Vector2(0, 562), Vector2(1152, 86), 0.66)
 	_overlay.add_child(controls)
-	_center_text(controls, "Move: A D or ← →     Jump: Space (press twice)", 18, 12)
-	_center_text(controls, "R: retry from campfire     Esc: pause     M: sound", 18, 45)
+	_center_text(controls, "A D or ← →: move     Space: jump twice     Shift: dash", 18, 12)
+	_center_text(
+		controls,
+		"J: shoot after bow reward     R: retry     Esc: gear / pause     M: sound",
+		18,
+		45
+	)
 	if best > 0:
 		_center_text(menu, "Best time: " + _format_time(best), 17, 295, QUIET_TEXT)
 	start.grab_focus()
 
 
 func show_pause() -> void:
-	var column := _menu_column(Vector2(400, 340))
+	var column := _menu_column(Vector2(660, 550), 0.82)
+	column.add_theme_constant_override("separation", 12)
+	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	_add_centered(column, "Paused", 28, true)
 	_add_centered(column, _chapter_title, 19)
 	var resume := _button("Keep exploring", true)
 	resume.pressed.connect(func() -> void: resume_requested.emit())
 	column.add_child(resume)
+	column.add_child(_equipment_menu())
 	var restart := _button("Restart all chapters", false)
 	restart.pressed.connect(func() -> void: restart_requested.emit())
 	column.add_child(restart)
 	column.add_child(_settings())
 	resume.grab_focus()
+
+
+func update_equipment(equipment: ForestEquipment, dash_ready: bool) -> void:
+	_equipment = equipment
+	var dash_text := "Dash: ready" if dash_ready else "Dash: wait or land"
+	var bow_text := "Bow: locked"
+	var armor_text := "Armor: locked"
+	if equipment.is_unlocked(&"bow"):
+		bow_text = "Bow: J to shoot" if equipment.is_equipped(&"bow") else "Bow: off"
+	if equipment.is_unlocked(&"armor"):
+		armor_text = "Armor: off"
+		if equipment.is_equipped(&"armor"):
+			armor_text = "Armor: ready" if equipment.armor_charge > 0 else "Armor: spent"
+	_equipment_label.text = "%s     %s     %s" % [dash_text, bow_text, armor_text]
+	_sync_equipment_rows()
 
 
 func show_stage_complete(
@@ -241,6 +269,11 @@ func _build_header() -> void:
 	_zone_label = _label("Mossy trail", 16, QUIET_TEXT)
 	_zone_label.position = Vector2(28, 48)
 	_header.add_child(_zone_label)
+	_equipment_label = _label("Dash: ready     Bow: locked     Armor: locked", 16, QUIET_TEXT)
+	_equipment_label.position = Vector2(440, 52)
+	_equipment_label.size.x = 624
+	_equipment_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_header.add_child(_equipment_label)
 	_acorn_label = _label("Acorns 0/3", 18, TEXT)
 	_gem_label = _label("Gems 0/36", 18, TEXT)
 	_time_label = _label("00:00", 18, TEXT)
@@ -258,15 +291,18 @@ func _build_header() -> void:
 
 
 func _build_footer() -> void:
-	_footer = _readability_band(Vector2(0, 606), Vector2(1152, 42), 0.55)
+	_footer = _readability_band(Vector2(0, 588), Vector2(1152, 60), 0.55)
 	_screen.add_child(_footer)
 	var controls := _label(
-		"A D or ← → move    Space: double jump    R: retry    Esc: pause    M: sound", 16, TEXT
+		"A D or ← →: move    Space: double jump    Shift: dash    J: shoot", 16, TEXT
 	)
-	controls.position = Vector2(24, 10)
+	controls.position = Vector2(24, 7)
 	_footer.add_child(controls)
+	var options := _label("R: retry from campfire    Esc: gear / pause    M: sound", 16, QUIET_TEXT)
+	options.position = Vector2(24, 33)
+	_footer.add_child(options)
 	_jump_label = _label("Air jump ready", 16, QUIET_TEXT)
-	_jump_label.position = Vector2(920, 10)
+	_jump_label.position = Vector2(920, 7)
 	_jump_label.size.x = 208
 	_jump_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_footer.add_child(_jump_label)
@@ -312,6 +348,8 @@ func _open_menu(dimensions: Vector2, shade_alpha := 0.6) -> Control:
 		child.queue_free()
 	_sound_toggle = null
 	_motion_toggle = null
+	_equipment_toggles.clear()
+	_equipment_details.clear()
 	_header.hide()
 	_footer.hide()
 	_boss_band.hide()
@@ -326,8 +364,8 @@ func _open_menu(dimensions: Vector2, shade_alpha := 0.6) -> Control:
 	return menu
 
 
-func _menu_column(dimensions: Vector2) -> VBoxContainer:
-	var menu := _open_menu(dimensions)
+func _menu_column(dimensions: Vector2, shade_alpha := 0.6) -> VBoxContainer:
+	var menu := _open_menu(dimensions, shade_alpha)
 	var column := VBoxContainer.new()
 	column.size = dimensions
 	column.add_theme_constant_override("separation", 21)
@@ -355,6 +393,54 @@ func _settings() -> HBoxContainer:
 	)
 	row.add_child(_motion_toggle)
 	return row
+
+
+func _equipment_menu() -> VBoxContainer:
+	var equipment_menu := VBoxContainer.new()
+	equipment_menu.add_theme_constant_override("separation", 8)
+	_add_centered(equipment_menu, "Equipment", 20, true)
+	for item in ForestEquipment.ITEMS:
+		var row := HBoxContainer.new()
+		row.custom_minimum_size.y = 70
+		row.add_theme_constant_override("separation", 20)
+		var toggle := _toggle(item.name, false)
+		toggle.custom_minimum_size = Vector2(160, 44)
+		toggle.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		toggle.toggled.connect(
+			func(enabled: bool) -> void:
+				equipment_toggled.emit(item.id, enabled)
+				_sync_equipment_rows()
+		)
+		row.add_child(toggle)
+		var detail := _label("", 17, QUIET_TEXT)
+		detail.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		detail.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.add_child(detail)
+		equipment_menu.add_child(row)
+		_equipment_toggles[item.id] = toggle
+		_equipment_details[item.id] = detail
+	_sync_equipment_rows()
+	return equipment_menu
+
+
+func _sync_equipment_rows() -> void:
+	for item in ForestEquipment.ITEMS:
+		if not _equipment_toggles.has(item.id):
+			continue
+		var toggle: CheckButton = _equipment_toggles[item.id]
+		var detail: Label = _equipment_details[item.id]
+		var unlocked := _equipment != null and _equipment.is_unlocked(item.id)
+		var equipped := _equipment != null and _equipment.is_equipped(item.id)
+		toggle.disabled = not unlocked
+		toggle.set_pressed_no_signal(equipped)
+		toggle.tooltip_text = item.description if unlocked else item.unlock_hint
+		var status: String = item.unlock_hint
+		if unlocked:
+			status = "Equipped" if equipped else "Not equipped"
+			if item.id == &"armor":
+				status += " · ready" if _equipment.armor_charge > 0 else " · spent"
+		detail.text = "%s\n%s" % [item.description, status]
 
 
 func _toggle(text: String, enabled: bool) -> CheckButton:

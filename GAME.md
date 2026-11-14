@@ -25,8 +25,10 @@ installed Godot runtime.
 | Jump | **Space**, **W**, or **Up** |
 | Double jump | Release jump, then press it again in the air |
 | Jump higher | Hold jump a little longer |
+| Dash | **Shift**, in the direction you face |
+| Shoot the equipped bow | **J** |
 | Retry from your campfire | **R** |
-| Pause or resume | **Esc** or **P** |
+| Pause, choose equipment, or resume | **Esc** or **P** |
 | Sound on or off | **M** |
 
 Collect the chapter's three acorns and enter its gate. The chapter result names
@@ -34,9 +36,29 @@ your next destination; choose **Continue** to travel there. Campfires remember
 your place during the current chapter. Retries are unlimited, and collected
 items stay with you after a tumble.
 
+Dash is available from the start. It gives a short horizontal burst, then needs
+a brief cooldown. You get one dash in the air before landing again. Jumping can
+interrupt a dash; walls and hazards still matter.
+
+At **Emberwood's second campfire** (the first checkpoint after the starting camp),
+you earn a **bow**. Press **J** to fire an arrow in the direction the fox faces.
+Arrows knock critters aside and stop at platforms and walls. Ammunition is
+unlimited, with a short delay between shots; release and press J for each shot.
+
+At **Emberwood's third campfire**, you earn **leaf armor**. It absorbs one hit from
+spikes, critters, or Old Croak. A newly reached campfire or a retry repairs it;
+returning to an already lit camp or toggling equipment does not. Armor cannot
+save you from a fall. The HUD shows whether it is ready or spent.
+
+Rewards equip automatically. Open **Esc → Equipment** to equip or remove the bow
+and armor independently; you can use both together. Equipment and choices carry
+across retries and levels. A later checkpoint also awards earlier rewards you
+missed. Restarting the adventure clears equipment along with the level progress.
+
 Old Croak marks where he will land before he leaps. Avoid the landing spot and
 jump over the ripples. When he rests and his cap turns gold, land on his head.
-**Three successful stomps** let you pass. The fox has **three hearts** during this
+You can also **shoot him while he rests**. **Three hits**, one per opening, let
+you pass. The fox has **three hearts** during this
 encounter. Losing them returns you to the nearby campfire and resets the fight,
 including Old Croak's health. Your collected acorns and gems remain collected.
 
@@ -57,7 +79,11 @@ No plugins or runtime network connection are required. The main scene is
 
 - [scripts/game.gd](scripts/game.gd): chapter progression, game states, pickups,
   retries, encounter health, and campaign results.
-- [scripts/fox.gd](scripts/fox.gd): movement and double jumps.
+- [scripts/fox.gd](scripts/fox.gd): movement, double jumps, dash, and worn equipment.
+- [scripts/equipment.gd](scripts/equipment.gd): reward definitions, unlocks,
+  equipment choices, and armor charge. Checkpoint names and menu descriptions
+  come from this shared catalog.
+- [scripts/arrow.gd](scripts/arrow.gd): arrow flight, range, and swept hit detection.
 - [scripts/level.gd](scripts/level.gd): terrain, hazards, pickups, and world labels.
 - [scripts/chapters.gd](scripts/chapters.gd): new chapter layouts and test routes.
 - [scripts/platform.gd](scripts/platform.gd): solid, moving, and crumbling terrain.
@@ -80,7 +106,7 @@ gdlint scripts tests
 ruff check tools/run_game_tests.py
 ruff format --check tools/run_game_tests.py
 
-# Fox, platform, boss, game-state, original-route, and full-campaign suites.
+# Fox, platform, boss, arrows, game state, equipment, and campaign suites.
 # Each suite uses temporary saved data and cleans it up afterward.
 python3 tools/run_game_tests.py
 

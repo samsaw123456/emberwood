@@ -33,6 +33,11 @@ specific action hint. Toasts have a bounded width and can wrap.
 
 Pause, level completion, and victory are small menus over the current scene.
 Each has a direct action, and pause includes sound and gentle-motion settings.
+Pause also contains two equipment rows with direct toggles, descriptions, and
+checkpoint hints for locked rewards. The play HUD reports dash readiness and
+bow/armor status in a single line. Bow and leaf armor are drawn on the fox in
+the same small pixel scale; unused reward campfires display the corresponding
+item. Equipment introduces no separate inventory grid or decorative screen.
 The title's controls sit over the ground at the bottom of the screen so they do not
 collide with the tutorial signs in the opening level. No decorative page, marketing
 panel, route diagram, or slogan is needed to explain the game.
