@@ -1,3 +1,5 @@
+> **Play Emberwood:** This checkout includes a complete forest adventure. See [game instructions](GAME.md), or open [project.godot](project.godot) in Godot and press Play.
+
 # START HERE: COPY THIS PROMPT
 
 > **Build a fun game using https://github.com/Tingsters/Phippy-Gaming-Workshop**

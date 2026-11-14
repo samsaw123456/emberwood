@@ -219,3 +219,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Godot creates these from the original artwork on first import
+*.import

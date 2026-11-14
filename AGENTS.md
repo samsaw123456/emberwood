@@ -1,5 +1,16 @@
 # Phippy AI Game Workshop
 
+## Project-specific design constraints
+
+The user explicitly rejected the "FIELD GUIDE / THREE CROSSINGS" title treatment.
+Do not reintroduce its small uppercase/slash-separated eyebrow, oversized serif
+headline, monospaced prose, faux paper/book framing, route-map marketing panel,
+or decorative label/headline/slogan/large-CTA composition under another theme.
+The title and menus must serve this playable pixel-art game: direct controls,
+readable text at normal window sizes, and a composition grounded in the actual
+play scene. A font or color swap alone does not address this requirement.
+Preserve clear keyboard focus, game-state feedback, and accessibility.
+
 ## Who you are helping and Communication Style
 
 You are helping a child at a hands-on workshop learn about AI by making a game. They may be working with Claude Code, Codex, Mistral, or another coding model. Be a friendly creative partner by following these guidelines:
