@@ -223,9 +223,14 @@ func _draw_gear() -> void:
 		_gear_art.draw_rect(Rect2(7, -21, 14, 5), Color("b96841"))
 		_gear_art.draw_rect(Rect2(10, -21, 11, 3), Color("e5ad73"))
 	match weapon:
-		&"bow":
+		&"bow", &"thorn_fan":
 			_draw_bow()
-		&"spear":
+			if weapon == &"thorn_fan":
+				for offset in [-6, 0, 6]:
+					_gear_art.draw_line(
+						Vector2(12, -19), Vector2(31, -19 + offset), Color("b4ce78"), 2
+					)
+		&"spear", &"sunwood_lance":
 			_gear_art.draw_line(Vector2(-13, -19), Vector2(32, -19), Color("9b683d"), 3)
 			_gear_art.draw_line(Vector2(-13, -20), Vector2(30, -20), Color("d2ad70"), 1)
 			_gear_art.draw_colored_polygon(
@@ -233,6 +238,8 @@ func _draw_gear() -> void:
 				Color("c9d4c7")
 			)
 			_gear_art.draw_rect(Rect2(26, -22, 4, 6), Color("5c7068"))
+			if weapon == &"sunwood_lance":
+				_gear_art.draw_rect(Rect2(11, -25, 18, 4), Color("e2c16d"))
 		&"seed_bomb":
 			_gear_art.draw_rect(Rect2(-15, -19, 9, 14), Color("795b39"))
 			_gear_art.draw_rect(Rect2(-14, -18, 7, 3), Color("c29a55"))

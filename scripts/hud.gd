@@ -166,7 +166,7 @@ func show_pause() -> void:
 	column.add_child(restart)
 	column.add_child(_settings())
 	resume.grab_focus()
-	_reveal_equipped_armor.call_deferred()
+	_reveal_equipped_items.call_deferred()
 
 
 func update_equipment(equipment: ForestEquipment, dash_ready: bool) -> void:
@@ -430,7 +430,9 @@ func _equipment_menu() -> VBoxContainer:
 		var column := VBoxContainer.new()
 		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_theme_constant_override("separation", 6)
-		var title := "Weapons" if category == &"weapon" else "Armor · scroll for more"
+		var title := (
+			"Weapons · scroll for more" if category == &"weapon" else "Armor · scroll for more"
+		)
 		column.add_child(_label(title, 20, TEXT, true))
 		columns.add_child(column)
 		var scroll := ScrollContainer.new()
@@ -455,15 +457,18 @@ func _equipment_menu() -> VBoxContainer:
 	return equipment_menu
 
 
-func _reveal_equipped_armor() -> void:
-	if _equipment == null or not _equipment_scrolls.has(&"armor"):
+func _reveal_equipped_items() -> void:
+	if _equipment == null:
 		return
-	var selected := _equipment.active_armor()
-	if not _equipment_toggles.has(selected):
-		return
-	var scroll: ScrollContainer = _equipment_scrolls[&"armor"]
-	var toggle: CheckButton = _equipment_toggles[selected]
-	scroll.ensure_control_visible(toggle.get_parent())
+	for category in [&"weapon", &"armor"]:
+		var selected := (
+			_equipment.active_weapon() if category == &"weapon" else _equipment.active_armor()
+		)
+		if not _equipment_scrolls.has(category) or not _equipment_toggles.has(selected):
+			continue
+		var scroll: ScrollContainer = _equipment_scrolls[category]
+		var toggle: CheckButton = _equipment_toggles[selected]
+		scroll.ensure_control_visible(toggle.get_parent())
 
 
 func _equipment_row(item: Dictionary) -> VBoxContainer:

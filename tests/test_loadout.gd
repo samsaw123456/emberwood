@@ -112,7 +112,7 @@ func _test_later_rewards() -> void:
 		_check(gear.active_armor() == reward[1], "The new armor equips immediately.")
 		_check(gear.armor_capacity() == reward[2], "The new armor grants its promised capacity.")
 		_check(gear.rewards_at(reward[0], 1).is_empty(), "Repeated contact cannot duplicate armor.")
-	_check(gear.unlocked.size() == 11, "The complete adventure contains eleven gear rewards.")
+	_check(gear.unlocked.size() == 13, "The complete adventure contains thirteen gear rewards.")
 
 
 func _test_armor_budget() -> void:
@@ -181,9 +181,9 @@ func _test_full_armor_budget() -> void:
 
 func _test_catchup_and_reset() -> void:
 	var gear := ForestEquipment.new()
-	_check(gear.rewards_at(19, 2).size() == 11, "A later checkpoint catches up all missed rewards.")
+	_check(gear.rewards_at(19, 2).size() == 13, "A later checkpoint catches up all missed rewards.")
 	_check(
-		gear.active_weapon() == &"seed_bomb" and gear.active_armor() == &"sunleaf_armor",
+		gear.active_weapon() == &"sunwood_lance" and gear.active_armor() == &"sunleaf_armor",
 		"Catchup equips the latest reward in each category."
 	)
 	gear.set_equipped(&"spear", true)

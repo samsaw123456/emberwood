@@ -17,7 +17,8 @@ func _run() -> void:
 	]:
 		await _test_armor_reward(reward[0], reward[1], reward[2])
 	_check(
-		game.equipment.unlocked.size() == 11, "The final armor camp has unlocked all eleven items."
+		game.equipment.unlocked.size() == 13,
+		"The final armor camp has unlocked all thirteen items."
 	)
 	game.start_run()
 	_check(game.equipment.unlocked.is_empty(), "Restart clears all later armor unlocks.")

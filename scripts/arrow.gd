@@ -29,7 +29,8 @@ func setup(
 	world: ForestLevel,
 	boss: ForestBoss = null,
 	shooter: PhysicsBody2D = null,
-	selected_weapon: StringName = &"bow"
+	selected_weapon: StringName = &"bow",
+	angle_offset: float = 0.0
 ) -> void:
 	_origin = origin
 	_direction = -1 if direction < 0 else 1
@@ -41,6 +42,7 @@ func setup(
 		weapon_id = &"bow"
 		_stats = ForestEquipment.definition(weapon_id)
 	_velocity = Vector2(_direction * float(_stats.speed), float(_stats.get("lift", 0.0)))
+	_velocity = _velocity.rotated(angle_offset * _direction)
 	_hits_left = int(_stats.pierce)
 	if is_instance_valid(shooter):
 		_excluded.append(shooter.get_rid())
@@ -218,9 +220,18 @@ func _draw() -> void:
 		draw_rect(Rect2(-3, -11, 3, 6), Color("71915b"))
 		draw_rect(Rect2(0, -10, 6, 3), Color("9aae6a"))
 	else:
-		draw_set_transform(Vector2.ZERO, 0, Vector2(_direction, 1))
-		if weapon_id == &"spear":
+		draw_set_transform(Vector2.ZERO, _velocity.angle())
+		if weapon_id in [&"spear", &"sunwood_lance"]:
 			_draw_spear()
+			if weapon_id == &"sunwood_lance":
+				draw_line(Vector2(-42, -4), Vector2(-20, -4), Color("e2c16d"), 3)
+		elif weapon_id == &"thorn_fan":
+			draw_colored_polygon(
+				PackedVector2Array(
+					[Vector2(-18, -5), Vector2(0, 0), Vector2(-18, 5), Vector2(-12, 0)]
+				),
+				Color("b4ce78")
+			)
 		else:
 			_draw_arrow()
 	draw_set_transform(Vector2.ZERO)

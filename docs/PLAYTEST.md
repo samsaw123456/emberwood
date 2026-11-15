@@ -40,6 +40,9 @@ saved data through [the runner](../tools/run_game_tests.py).
   from above, and protection does not disable critter attacks. External bounces
   interrupt dashes, leave one air jump, and ignore release of an earlier jump.
   Switching armor preserves damage already taken; it cannot refill protection.
+  Willow Narrows also awards a three-shot Thorn fan, and Rootbound Ruins awards
+  a Sunwood lance that pierces four critters. All shots stop at terrain and respect
+  Old Croak's one-hit-per-opening rule. Current release evidence: [RELEASE.md](RELEASE.md).
 - **Navigation:** all required acorns and gates are reachable through movement
   input. Campfires mark safe retry positions. The boss arena closes only when
   its acorns are collected, and reopens on defeat. Camera bounds follow the

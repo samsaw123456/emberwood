@@ -33,7 +33,7 @@ specific action hint. Toasts have a bounded width and can wrap.
 
 Pause, level completion, and victory are small menus over the current scene.
 Each has a direct action, and pause includes sound and gentle-motion settings.
-Pause contains two columns: three weapons and eight armor sets. Armor scrolls
+Pause contains two columns: five weapons and eight armor sets. Each list scrolls
 inside the existing menu, follows keyboard focus, and reveals the selected set
 when reopened. Descriptions explain behavior and locked choices name their
 reward checkpoint.

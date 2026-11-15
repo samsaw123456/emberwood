@@ -618,12 +618,14 @@ func _shoot() -> void:
 	var weapon := equipment.active_weapon()
 	if state != State.PLAYING or weapon == &"" or shot_cooldown > 0:
 		return
-	shot_cooldown = float(ForestEquipment.definition(weapon).cooldown)
-	var arrow := ForestArrow.new()
-	# Start inside the fox's bounds so a muzzle beside a thin wall cannot skip it.
-	arrow.setup(fox.position + Vector2(0, -20), fox.facing, level, boss, fox, weapon)
-	arrow.struck.connect(_on_arrow_struck)
-	arrows.add_child(arrow)
+	var stats := ForestEquipment.definition(weapon)
+	shot_cooldown = float(stats.cooldown)
+	for angle: float in stats.get("angles", [0.0]):
+		var arrow := ForestArrow.new()
+		# Each shot starts inside the fox so a thin wall cannot be skipped.
+		arrow.setup(fox.position + Vector2(0, -20), fox.facing, level, boss, fox, weapon, angle)
+		arrow.struck.connect(_on_arrow_struck)
+		arrows.add_child(arrow)
 	sound.play("shoot" if weapon == &"bow" else String(weapon))
 
 

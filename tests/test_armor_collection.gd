@@ -39,6 +39,8 @@ func _test_scroll_and_choices() -> void:
 		&"bow",
 		&"spear",
 		&"seed_bomb",
+		&"thorn_fan",
+		&"sunwood_lance",
 		&"armor",
 		&"bark_armor",
 		&"ironwood_armor",
@@ -59,10 +61,10 @@ func _test_scroll_and_choices() -> void:
 		_check(game.equipment.is_equipped(item_id), "Space equips the visible focused choice.")
 	_check(
 		(
-			game.equipment.active_weapon() == &"seed_bomb"
+			game.equipment.active_weapon() == &"sunwood_lance"
 			and game.equipment.active_armor() == &"sunleaf_armor"
 		),
-		"All eleven keyboard choices update the actual loadout."
+		"All thirteen keyboard choices update the actual loadout."
 	)
 	for text in ["Keep exploring", "Restart all chapters", "Sound", "Gentle motion"]:
 		var control := _find_button(game.hud, text)

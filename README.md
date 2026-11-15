@@ -1,4 +1,4 @@
-> **Play Emberwood:** This checkout includes a complete forest adventure. See [game instructions](GAME.md), or open [project.godot](project.godot) in Godot and press Play.
+> **Play Emberwood:** [Download the Linux installer](https://github.com/samsaw123456/emberwood/releases/latest). Install it once to add Emberwood to your Applications launcher, ready to play offline. See [installer details](packaging/README.md) or [game instructions](GAME.md). Developers can open [project.godot](project.godot) in Godot and press Play.
 
 # START HERE: COPY THIS PROMPT
 

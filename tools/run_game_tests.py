@@ -17,6 +17,7 @@ SUITES = (
     "loadout",
     "armor_collection",
     "weapons",
+    "later_weapons",
     "expansion",
     "journey",
     "interactions",

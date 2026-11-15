@@ -25,6 +25,8 @@ func _ready() -> void:
 	clips.shoot = _tone([660.0, 440.0], 0.035)
 	clips.spear = _tone([392.0, 247.0], 0.045)
 	clips.seed_bomb = _tone([294.0, 440.0, 330.0], 0.04)
+	clips.thorn_fan = _tone([740.0, 620.0, 490.0], 0.025)
+	clips.sunwood_lance = _tone([294.0, 196.0], 0.06)
 	clips.armor = _tone([784.0, 1047.0], 0.07)
 	clips.win = _tone([523.0, 659.0, 784.0, 1047.0, 784.0, 1047.0], 0.16)
 

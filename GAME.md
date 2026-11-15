@@ -32,6 +32,11 @@ Each level has **3 required acorns** and a hidden firefly. There are **60 acorns
 
 ## Play
 
+For other Linux players, the [downloadable installer](https://github.com/samsaw123456/emberwood/releases/latest)
+includes the game engine and adds Emberwood to the Applications launcher after
+installation. It supports x86-64 Ubuntu/Debian desktops. See
+[installer instructions](packaging/README.md).
+
 On this computer, open **Applications** and search for **Emberwood**. Its icon
 shows the fox in a forest. This shortcut launches the game in `~/git/aie` and
 works offline, using the installed Godot runtime and local artwork. Keep that
@@ -82,9 +87,11 @@ press uses it once; ammunition is unlimited, with a short delay between uses.
 | **Seed bombs** | Moss Caverns, second campfire | Lobs a seed that bursts on impact or after a short fuse, hitting nearby enemies. |
 | **Ironwood armor** | Sunlit Ridge, second campfire | Blocks three hits. |
 | **Reed mail** | Reedbank Trail, second campfire | Blocks four hits. |
+| **Thorn fan** | Willow Narrows, second campfire | Fires three spreading thorns with a shorter reach. |
 | **Frost armor** | Frostpine Pass, second campfire | Blocks five hits. |
 | **Stoneplate** | Slate Heights, second campfire | Blocks six hits. |
 | **Copperbark armor** | Copperbark Woods, second campfire | Blocks seven hits. |
+| **Sunwood lance** | Rootbound Ruins, second campfire | A slower, longer-reaching throw that pierces four critters. |
 | **Sunleaf armor** | Sunleaf Crown, second campfire | Blocks eight hits. |
 
 Weapons stop at solid terrain; seed bursts cannot hit through walls. Armor blocks
@@ -94,7 +101,8 @@ erase damage already absorbed. The HUD shows the remaining blocks.
 
 Rewards equip automatically. Open **Esc** to choose **one weapon and one armor**;
 you can turn either off. Scroll the armor list to see all eight sets; keyboard
-focus brings each choice into view. Gear and choices carry across retries and levels.
+focus brings each choice into view. The weapon list scrolls too, with five choices.
+Gear and choices carry across retries and levels.
 A later checkpoint also awards earlier rewards you missed. Restarting the whole
 adventure clears equipment along with level progress.
 

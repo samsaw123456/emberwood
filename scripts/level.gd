@@ -440,7 +440,7 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 	for item in ForestEquipment.ITEMS:
 		if item.chapter != stage_index or item.camp != index:
 			continue
-		if item.id == &"bow":
+		if item.id in [&"bow", &"thorn_fan"]:
 			draw_polyline(
 				PackedVector2Array(
 					[
@@ -455,7 +455,10 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 				4
 			)
 			draw_line(pos + Vector2(-5, -18), pos + Vector2(-5, 18), Color("eee6c8"), 1)
-		elif item.id == &"spear":
+			if item.id == &"thorn_fan":
+				for offset in [-7, 0, 7]:
+					draw_line(pos, pos + Vector2(22, offset), Color("b4ce78"), 2)
+		elif item.id in [&"spear", &"sunwood_lance"]:
 			draw_line(pos + Vector2(-16, 17), pos + Vector2(13, -12), Color("9b683d"), 4)
 			draw_colored_polygon(
 				PackedVector2Array(
@@ -463,7 +466,12 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 				),
 				Color("c9d4c7")
 			)
-			draw_line(pos + Vector2(9, -7), pos + Vector2(14, -12), Color("68835a"), 5)
+			draw_line(
+				pos + Vector2(9, -7),
+				pos + Vector2(14, -12),
+				Color("e2c16d") if item.id == &"sunwood_lance" else Color("68835a"),
+				5
+			)
 		elif item.id == &"seed_bomb":
 			draw_circle(pos, 14, Color("547344"))
 			draw_rect(Rect2(pos + Vector2(-9, -7), Vector2(18, 14)), Color("a5b56a"))

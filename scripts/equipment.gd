@@ -99,6 +99,20 @@ const ITEMS := [
 		"armor_art": &"reeds"
 	},
 	{
+		"id": &"thorn_fan",
+		"name": "Thorn fan",
+		"category": &"weapon",
+		"description": "Three spreading thorns. Short range. J to fire.",
+		"unlock_hint": "Willow Narrows: second campfire.",
+		"chapter": 6,
+		"camp": 1,
+		"cooldown": 0.65,
+		"speed": 600.0,
+		"range": 480.0,
+		"pierce": 1,
+		"angles": [-0.22, 0.0, 0.22]
+	},
+	{
 		"id": &"frost_armor",
 		"name": "Frost armor",
 		"category": &"armor",
@@ -136,6 +150,19 @@ const ITEMS := [
 		"armor_color": Color("bc8559"),
 		"armor_edge": Color("68483b"),
 		"armor_art": &"copper"
+	},
+	{
+		"id": &"sunwood_lance",
+		"name": "Sunwood lance",
+		"category": &"weapon",
+		"description": "Pierces four critters. Long reach, slower throws.",
+		"unlock_hint": "Rootbound Ruins: second campfire.",
+		"chapter": 16,
+		"camp": 1,
+		"cooldown": 1.0,
+		"speed": 440.0,
+		"range": 1050.0,
+		"pierce": 4
 	},
 	{
 		"id": &"sunleaf_armor",

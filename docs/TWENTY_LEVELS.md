@@ -1,5 +1,8 @@
 # Twenty-level adventure
 
+These notes describe the first twenty-level release. The later weapon additions
+and downloadable app package are recorded in [RELEASE.md](RELEASE.md).
+
 Scope: retain the first five levels and add fifteen routes across riverlands,
 frostpine mountains, and ancient woods. Add five armor rewards, for eight armor
 sets total, and keep the `emberwood` executable and Zed task current.

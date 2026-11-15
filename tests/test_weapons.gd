@@ -7,6 +7,9 @@ var checks := 0
 func _run() -> void:
 	Engine.time_scale = 3.0
 	Engine.physics_ticks_per_second = 180
+	await _test_thorn_fan()
+	await _test_sunwood_lance()
+	await _test_later_terrain_and_boss()
 	await _test_spear_piercing()
 	await _test_spear_terrain()
 	await _test_bomb_arc_and_fuse()
@@ -17,7 +20,9 @@ func _run() -> void:
 	if is_instance_valid(world):
 		world.queue_free()
 	if failures.is_empty():
-		print("PASS: %d spear and seed-bomb collision, blast, pause and cleanup checks." % checks)
+		print(
+			"PASS: %d weapon collision, spread, piercing, blast, pause and cleanup checks." % checks
+		)
 		quit(0)
 	else:
 		for message in failures:
@@ -26,10 +31,14 @@ func _run() -> void:
 
 
 func _launch(
-	kind: StringName, origin: Vector2, direction: int = 1, boss: ForestBoss = null
+	kind: StringName,
+	origin: Vector2,
+	direction: int = 1,
+	boss: ForestBoss = null,
+	angle: float = 0.0
 ) -> ForestArrow:
 	var projectile := ForestArrow.new()
-	projectile.setup(origin, direction, world, boss, null, kind)
+	projectile.setup(origin, direction, world, boss, null, kind, angle)
 	projectile.struck.connect(
 		func(at: Vector2, target: String) -> void:
 			impacts.append({"position": at, "target": target})
@@ -225,3 +234,67 @@ func _boss_fixture(phase: String) -> ForestBoss:
 func _check(condition: bool, message: String) -> void:
 	checks += 1
 	super._check(condition, message)
+
+
+func _test_thorn_fan() -> void:
+	for direction in [1, -1]:
+		_new_world()
+		for height in [90, 130, 170]:
+			var target := _critter(180)
+			target.home.y = height
+			world.critters.append(target)
+		for angle in [-0.22, 0.0, 0.22]:
+			_launch(&"thorn_fan", Vector2(0 if direction > 0 else 360, 110), direction, null, angle)
+		await _step(35)
+		for target in world.critters:
+			_check(target.out, "The fan reaches three separate heights in either direction.")
+		_check(impacts.size() == 3, "Each fan thorn can strike only one target.")
+	_new_world()
+	var missed := _launch(&"thorn_fan", Vector2(0, 30), 1, null, -0.22)
+	await _step(55)
+	_check(not is_instance_valid(missed), "Diagonal thorns expire at their short range.")
+
+
+func _test_sunwood_lance() -> void:
+	for direction in [1, -1]:
+		_new_world()
+		for x in [80, 160, 240, 320, 400]:
+			world.critters.append(_critter(x))
+		var lance := _launch(&"sunwood_lance", Vector2(0 if direction > 0 else 480, 110), direction)
+		await _step(65)
+		var untouched := 4 if direction > 0 else 0
+		for index in 5:
+			_check(
+				world.critters[index].out == (index != untouched),
+				"The lance pierces exactly four targets in either direction."
+			)
+		_check(
+			impacts.size() == 4 and not is_instance_valid(lance),
+			"The fourth hit ends the lance cleanly."
+		)
+	_new_world()
+	var missed := _launch(&"sunwood_lance", Vector2(0, 30))
+	await _step(155)
+	_check(not is_instance_valid(missed), "The long-range lance still has finite lifetime.")
+
+
+func _test_later_terrain_and_boss() -> void:
+	for weapon in [&"thorn_fan", &"sunwood_lance"]:
+		_new_world()
+		world.critters.assign([_critter(220)])
+		_platform(Rect2(150, -100, 1, 400))
+		await _step(3)
+		for angle in [-0.22, 0.0, 0.22] if weapon == &"thorn_fan" else [0.0]:
+			_launch(weapon, Vector2(0, 110), 1, null, angle)
+		await _step(40)
+		_check(not world.critters[0].out, "All new shots stop at thin terrain.")
+		for phase in ["warning", "rest"]:
+			_new_world()
+			var boss := _boss_fixture(phase)
+			for angle in [-0.22, 0.0, 0.22] if weapon == &"thorn_fan" else [0.0]:
+				_launch(weapon, Vector2(0, 110), 1, boss, angle)
+			await _step(50)
+			_check(
+				boss.health == (2 if phase == "rest" else 3),
+				"New weapons respect boss guard and one hit per opening."
+			)
