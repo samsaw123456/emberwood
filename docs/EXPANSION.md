@@ -1,5 +1,8 @@
 # Five-chapter expansion
 
+These notes describe the earlier five-level release. The current expansion is
+documented in [Twenty-level adventure](TWENTY_LEVELS.md).
+
 Scope: continue beyond Old Croak into Moss Caverns and Sunlit Ridge. Add two
 weapons and two armor upgrades, earned at camps and chosen in the pause menu.
 The existing pixel world, compact typography, and direct controls stay coherent.

@@ -5,7 +5,7 @@ config_version=5
 config/name="Emberwood — Forest Adventure"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/description="Five forest adventures from Emberwood to Sunlit Ridge, with collectible weapons, armor and Old Croak."
+config/description="Twenty forest adventures through riverlands, snowy mountains and ancient woods, with weapons, armor and Old Croak."
 
 [display]
 window/size/viewport_width=1152

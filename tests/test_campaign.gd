@@ -24,7 +24,10 @@ func _run() -> void:
 		_fail("Campaign completion was not reached.")
 		return
 	print(
-		"PASS: full five-chapter campaign and Old Croak, inputs only. Time ",
+		(
+			"PASS: full %d-level campaign and Old Croak, inputs only. Time "
+			% ForestChapters.TITLES.size()
+		),
 		game.format_time(game.elapsed),
 		"; retries ",
 		game.deaths,

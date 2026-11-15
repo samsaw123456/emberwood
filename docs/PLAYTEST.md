@@ -1,17 +1,19 @@
 # Emberwood playtest notes
 
-The adventure has five chapters—Emberwood, Flooded Mill, High Canopy, Moss
-Caverns, and Sunlit Ridge—with 15 required acorns, 108 optional gems, five hidden
-fireflies, and Old Croak. The latest [expansion evidence](EXPANSION.md) includes
-new weapons, armor, levels, and the Zed launcher. Older runs below are retained
-as evidence for the versions they tested.
+The adventure has twenty levels, from Emberwood through the riverlands and
+snowy mountains to the ancient forest. There are 60 required acorns, 378 optional
+gems, twenty hidden fireflies, and Old Croak. The latest
+[expansion evidence](TWENTY_LEVELS.md) covers the fifteen added routes, eight
+armor choices, and the Zed launcher. Older runs below are retained as evidence
+for the versions they tested.
 Verification uses Godot 4.5.1 on Linux, normally at 60 Hz. Tests use isolated
 saved data through [the runner](../tools/run_game_tests.py).
 
 ## Game checklist
 
 - **Core loop and rules:** title, forest, chapter result/Continue, mill, canopy,
-  boss, caves, ridge, summit gate, results, and replay. Each gate requires three
+  boss, caves, ridge, riverlands, mountains, ancient forest, results, and replay.
+  Only the twentieth gate finishes the adventure. Each gate requires three
   acorns; the canopy gate also requires defeating Old Croak. Retries are unlimited.
 - **Physics:** acceleration/stopping, variable-height double jump, jump limits,
   coyote time, buffered landing, moving-platform carry/turnaround, crumble and
@@ -21,7 +23,8 @@ saved data through [the runner](../tools/run_game_tests.py).
 - **Interaction and rewards:** Shift dashes from the start. The second Emberwood
   campfire awards a bow; the third awards armor. Rewards equip immediately and
   can be removed independently in pause. J fires once per press with a cooldown.
-  Later camps add the spear, bark armor, seed bombs, and ironwood armor. Only one
+  Later camps add the spear, bark armor, seed bombs, ironwood armor, Reed mail,
+  Frost armor, Stoneplate, Copperbark armor, and Sunleaf armor. Only one
   weapon and one armor can be equipped at a time. Spears pierce two critters;
   seed bombs arc and burst nearby, with terrain blocking their blast.
   Arrows use swept collision, hit the first obstruction, and cannot cross thin
@@ -29,7 +32,8 @@ saved data through [the runner](../tools/run_game_tests.py).
   range cleanup, and simultaneous turn/shoot were checked. Shooting during a
   dash follows its locked facing direction.
 - **Defense and combat:** leaf/bark/ironwood armor block one/two/three hits and give
-  recovery time; falls still cause retries. A new camp or retry recharges armor;
+  recovery time; the five later sets block four through eight hits. Falls still
+  cause retries. A new camp or retry recharges armor;
   returning to an old camp or reequipping does not. Old Croak takes one arrow
   or falling stomp per resting phase. Three hits defeat him. Guarded phases
   reject arrows, including shots through the visible cap. Stomps cross the cap
@@ -50,11 +54,12 @@ saved data through [the runner](../tools/run_game_tests.py).
 - **Feel and accessibility:** visible keyboard focus, native buttons/toggles,
   readable controls, sound/gentle-motion settings, forgiving collision margins,
   and clear boss hints. Armor has ready/spent text as well as a color change.
-  Bow and armor appear on the fox in either facing direction. The HUD, menus,
+  Armor selection scrolls with keyboard focus and reveals the current choice
+  when reopened. Weapons and armor appear on the fox in either facing direction. The HUD, menus,
   and title were inspected at 1152×648 and 800×600 with letterboxing.
-- **Polish and discovery:** licensed SunnyLand art, distinct forest/mill/canopy
-  scenery, small static pixel title, bundled DejaVu Sans, correct item counts,
-  campfire reward previews, and three hidden fireflies. Design constraints are
+- **Polish and discovery:** licensed SunnyLand art, distinct scenery across eight
+  region themes, small static pixel title, bundled DejaVu Sans, correct item counts,
+  campfire reward previews, and twenty hidden fireflies. Design constraints are
   recorded in [DESIGN.md](DESIGN.md) and the project instructions.
 - **Robustness and performance:** native Intel OpenGL and X11 software rendering
   were exercised. Tests cover repeated input, pause, retries, chapter cleanup,
@@ -81,13 +86,10 @@ git diff --check
 ```
 
 The runner includes `fox`, `platform`, `boss`, `arrow`, `game`, `equipment`,
-`loadout`, `weapons`, `expansion`, `interactions`, `route`, and `campaign`. Pass
-suite names to run a subset. All twelve suites passed across focused runs.
-Game integration passed **223 checks**; equipment **84**; loadout **45**; weapons
-**52**; expansion integration **60**; full-scene interactions **30**. Controller,
-platform, boss, original-route, and full-campaign tests also passed. Physics
-assertions wait on physics ticks instead of delayed rendering frames.
-Formatting, lint, shell syntax, resource import, and documentation links passed.
+`loadout`, `armor_collection`, `weapons`, `expansion`, `journey`, `interactions`,
+`route`, `trails`, and `campaign`. Pass suite names to run a subset. Physics
+assertions wait on physics ticks instead of delayed rendering frames. Current
+counts and full-campaign results are recorded in [TWENTY_LEVELS.md](TWENTY_LEVELS.md).
 
 ## Earlier boss audit verification (three chapters)
 

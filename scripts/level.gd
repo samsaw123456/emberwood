@@ -19,6 +19,7 @@ var title := "Emberwood"
 var required_acorns := 3
 var gate_label := "The forest gate"
 var gate_open := true
+var scenery_theme: StringName = &"forest"
 
 var platforms: Array[ForestPlatform] = []
 var spikes: Array[Rect2] = []
@@ -46,6 +47,7 @@ var _water_spans: Array[Vector2] = []
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	scenery_theme = ForestChapters.theme(stage_index)
 	if stage_index > 0:
 		_build_chapter()
 		_build_decorations()
@@ -101,6 +103,12 @@ func _build_chapter() -> void:
 
 
 func zone_title(x: float) -> String:
+	if stage_index >= 5:
+		var current := title
+		for sign in signs:
+			if sign.pos.x <= x:
+				current = sign.title
+		return current
 	if stage_index == 1:
 		return "The Millpond" if x < 1580 else "The Broken Race"
 	if stage_index == 2:
@@ -109,9 +117,8 @@ func zone_title(x: float) -> String:
 		return "Root Galleries" if x < 1720 else "Daylight Passage"
 	if stage_index == 4:
 		return "Stone Shelves" if x < 1900 else "Summit Approach"
-	if x >= 3950:
-		return "Moonlit Grove"
-	return "Bramble Crossing" if x >= 1900 else "Mossy Trail"
+	var forest_zone := "Bramble Crossing" if x >= 1900 else "Mossy Trail"
+	return "Moonlit Grove" if x >= 3950 else forest_zone
 
 
 func _build_terrain() -> void:
@@ -167,14 +174,21 @@ func add_platform(rect: Rect2, kind: String = "ground", motion := Vector2.ZERO) 
 	platform.setup(rect, kind, motion)
 	if kind == "wall":
 		platform.visible = false
-	if stage_index == 1:
-		platform.modulate = Color("c7c4af")
-	elif stage_index == 2:
-		platform.modulate = Color("c0cda7")
-	elif stage_index == 3:
-		platform.modulate = Color("a4b8a1")
-	elif stage_index == 4:
-		platform.modulate = Color("dbc99b")
+	match scenery_theme:
+		&"mill":
+			platform.modulate = Color("c7c4af")
+		&"canopy":
+			platform.modulate = Color("c0cda7")
+		&"cavern":
+			platform.modulate = Color("a4b8a1")
+		&"ridge":
+			platform.modulate = Color("dbc99b")
+		&"river":
+			platform.modulate = Color("b3c4ae")
+		&"frost":
+			platform.modulate = Color("b8d4d1")
+		&"ancient":
+			platform.modulate = Color("c6c18c")
 	add_child(platform)
 	platforms.append(platform)
 
@@ -274,8 +288,10 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if stage_index == 1:
+	if scenery_theme == &"mill":
 		_draw_millpond()
+	elif scenery_theme == &"river":
+		_draw_water()
 	_draw_decorations()
 	_draw_spikes()
 	_draw_collectibles()
@@ -295,10 +311,13 @@ func _draw_decorations() -> void:
 		var point: Vector2 = decor.pos
 		if absf(point.x - camera_x - 576) > 850:
 			continue
-		if stage_index == 3:
+		if scenery_theme == &"cavern":
 			_draw_cavern_growth(point, decor.kind)
 			continue
-		if stage_index == 4 and decor.kind == 0:
+		if scenery_theme in [&"river", &"frost", &"ancient"]:
+			_draw_trail_growth(point, decor.kind)
+			continue
+		if scenery_theme == &"ridge" and decor.kind == 0:
 			draw_texture_rect(
 				PINE, Rect2(point - Vector2(75, 250), Vector2(150, 250)), false, Color("b2b78a")
 			)
@@ -326,7 +345,8 @@ func _draw_decorations() -> void:
 func _draw_spikes() -> void:
 	for rect in spikes:
 		for x in range(int(rect.position.x), int(rect.end.x), 30):
-			draw_texture_rect(SPIKES, Rect2(x, rect.position.y, 30, 20), false)
+			var width := minf(30.0, rect.end.x - x)
+			draw_texture_rect(SPIKES, Rect2(x, rect.position.y, width, 20), false)
 		draw_rect(Rect2(rect.position.x, rect.end.y - 3, rect.size.x, 3), Color("e2987f"))
 
 
@@ -375,7 +395,7 @@ func _draw_camps() -> void:
 		draw_line(pos + Vector2(-14, -12), pos + Vector2(14, 2), Color("715550"), 6)
 		var lit := index <= camp_index
 		if not lit:
-			_draw_camp_reward(index, pos + Vector2(0, -66))
+			_draw_camp_reward(index, pos + Vector2(0, -90 if stage_index >= 5 else -66))
 		if lit:
 			draw_circle(pos + Vector2(0, -17), 36, Color(1, 0.62, 0.3, 0.12))
 			var flicker := 0.0 if reduced_motion else sin(age * 12) * 3
@@ -460,11 +480,8 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 				Color("a8bc72")
 			)
 		else:
-			var armor_color := Color("9ab880")
-			if item.id == &"bark_armor":
-				armor_color = Color("b38a57")
-			elif item.id == &"ironwood_armor":
-				armor_color = Color("83948c")
+			var armor_color: Color = item.get("armor_color", Color("9ab880"))
+			var armor_edge: Color = item.get("armor_edge", Color("526b48"))
 			draw_colored_polygon(
 				PackedVector2Array(
 					[
@@ -478,21 +495,30 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 				armor_color
 			)
 			draw_line(pos + Vector2(0, -12), pos + Vector2(0, 12), Color("e6d9a8"), 3)
-			if item.id == &"bark_armor":
+			if item.id in [&"bark_armor", &"reed_mail", &"copperbark_armor"]:
 				draw_line(pos + Vector2(-7, -10), pos + Vector2(-7, 5), Color("63472e"), 2)
 				draw_line(pos + Vector2(7, -10), pos + Vector2(7, 5), Color("63472e"), 2)
-			elif item.id == &"ironwood_armor":
+			elif item.id in [&"ironwood_armor", &"stoneplate"]:
 				for row in [-8, 0, 8]:
-					draw_line(pos + Vector2(-8, row), pos + Vector2(8, row), Color("3a514e"), 3)
-		draw_string(
-			ROUTE_FONT,
-			pos + Vector2(-80, -31),
-			item.name,
-			HORIZONTAL_ALIGNMENT_CENTER,
-			160,
-			16,
-			Color("f5e6be")
-		)
+					draw_line(pos + Vector2(-8, row), pos + Vector2(8, row), armor_edge, 3)
+			elif item.id == &"frost_armor":
+				draw_line(pos + Vector2(-10, -13), pos + Vector2(10, -13), Color("e0e7dc"), 5)
+				draw_line(pos + Vector2(-7, 2), pos + Vector2(7, 2), armor_edge, 3)
+			elif item.id == &"sunleaf_armor":
+				for side in [-1, 1]:
+					draw_line(pos + Vector2(side * 8, -8), pos + Vector2(0, 4), armor_edge, 3)
+		if stage_index >= 5:
+			# The final stepping stone ends left of camp; keep its reward label to the right.
+			_draw_route_label(item.name, pos + Vector2(22, 6), 16, _sign_title_color())
+		else:
+			_draw_route_label(
+				item.name,
+				pos + Vector2(-80, -31),
+				16,
+				_sign_title_color(),
+				HORIZONTAL_ALIGNMENT_CENTER,
+				160
+			)
 
 
 func _draw_gate() -> void:
@@ -521,18 +547,19 @@ func _draw_gate() -> void:
 			7,
 			Color("ffdc96") if taken_acorns.has(n) else Color("526761")
 		)
-	draw_string(
-		ROUTE_FONT,
-		gate + Vector2(-130, -177),
+	_draw_route_label(
 		gate_label,
-		HORIZONTAL_ALIGNMENT_CENTER,
-		260,
+		gate + Vector2(-130, -177),
 		17,
-		Color("304638") if stage_index == 4 else Color("f7e7be")
+		_sign_title_color(),
+		HORIZONTAL_ALIGNMENT_CENTER,
+		260
 	)
 	var hint := "Continue the trail" if unlocked else "Find all 3 magic acorns"
-	if stage_index == 2:
+	if ForestChapters.has_boss(stage_index):
 		hint = "The hollow is open" if unlocked else "Collect 3 acorns and pass Old Croak"
+	elif stage_index == ForestChapters.TITLES.size() - 1 and unlocked:
+		hint = "The heartwood awaits"
 	draw_string(
 		ROUTE_FONT, gate + Vector2(-140, 34), hint, HORIZONTAL_ALIGNMENT_CENTER, 280, 13, color
 	)
@@ -540,16 +567,27 @@ func _draw_gate() -> void:
 
 func _draw_sign(sign: Dictionary) -> void:
 	var pos: Vector2 = sign.pos
-	var font := ROUTE_FONT
-	var title_color := Color("304638") if stage_index == 4 else Color("ffdeab")
-	var hint_color := Color("344b40") if stage_index == 4 else Color("e2e5ce")
-	draw_string(font, pos, sign.title, HORIZONTAL_ALIGNMENT_LEFT, -1, 19, title_color)
-	draw_string(
-		font, pos + Vector2(0, 24), sign.hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, hint_color
-	)
+	var title_color := _sign_title_color()
+	var hint_color := Color("344b40") if _light_scenery() else Color("e2e5ce")
+	_draw_route_label(sign.title, pos, 19, title_color)
+	_draw_route_label(sign.hint, pos + Vector2(0, 24), 14, hint_color)
 
 
-func _draw_millpond() -> void:
+func _draw_route_label(
+	text: String,
+	pos: Vector2,
+	font_size: int,
+	color: Color,
+	alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT,
+	width: float = -1
+) -> void:
+	# Hints cross moving parallax layers; an outline keeps the letters readable over leaves.
+	var outline := Color("d9e0ce") if _light_scenery() else Color("344739")
+	draw_string_outline(ROUTE_FONT, pos, text, alignment, width, font_size, 2, outline)
+	draw_string(ROUTE_FONT, pos, text, alignment, width, font_size, color)
+
+
+func _draw_water() -> void:
 	for span in _water_spans:
 		draw_rect(Rect2(span.x, 600, span.y - span.x, 120), Color("365d66"))
 		for row in 4:
@@ -560,6 +598,10 @@ func _draw_millpond() -> void:
 				draw_line(
 					Vector2(start, 607 + row * 14), Vector2(end, 607 + row * 14), Color("729494"), 2
 				)
+
+
+func _draw_millpond() -> void:
+	_draw_water()
 	for platform in platforms:
 		if platform.kind == "wall" or platform.kind == "ground":
 			continue
@@ -569,6 +611,73 @@ func _draw_millpond() -> void:
 				Rect2(x - 5, platform.position.y + 25, 10, 680 - platform.position.y),
 				Color("494b49")
 			)
+
+
+func _light_scenery() -> bool:
+	return scenery_theme in [&"ridge", &"river", &"frost"]
+
+
+func _sign_title_color() -> Color:
+	return Color("304638") if _light_scenery() else Color("ffdeab")
+
+
+func _draw_trail_growth(point: Vector2, kind: int) -> void:
+	match scenery_theme:
+		&"river":
+			if kind == 0:
+				draw_texture_rect(
+					TREE, Rect2(point - Vector2(95, 198), Vector2(190, 198)), false, Color("98b499")
+				)
+			else:
+				for stem in 5:
+					var tip := point + Vector2(-29 + stem * 13, -38 - stem % 3 * 11)
+					draw_line(point + Vector2(-20 + stem * 11, 0), tip, Color("63834b"), 3)
+					draw_rect(Rect2(tip - Vector2(3, 12), Vector2(6, 15)), Color("a19657"))
+		&"frost":
+			if kind == 0:
+				draw_texture_rect(
+					PINE, Rect2(point - Vector2(70, 242), Vector2(140, 242)), false, Color("96b5ad")
+				)
+				for tier in 3:
+					var y := -190 + tier * 42
+					draw_line(
+						point + Vector2(-18 - tier * 9, y),
+						point + Vector2(18 + tier * 9, y),
+						Color("d3e0d5"),
+						6
+					)
+			elif kind == 2:
+				draw_texture_rect(
+					ROCK, Rect2(point - Vector2(38, 61), Vector2(76, 65)), false, Color("acc5c2")
+				)
+				draw_line(point + Vector2(-20, -49), point + Vector2(18, -49), Color("dce5da"), 5)
+			else:
+				draw_texture_rect(
+					BUSH, Rect2(point - Vector2(32, 34), Vector2(64, 39)), false, Color("8daea0")
+				)
+		&"ancient":
+			if kind == 0:
+				draw_texture_rect(
+					TREE,
+					Rect2(point - Vector2(120, 228), Vector2(240, 228)),
+					false,
+					Color("b5ad70")
+				)
+			elif kind == 2:
+				draw_texture_rect(
+					ROCK, Rect2(point - Vector2(38, 63), Vector2(76, 68)), false, Color("b5b68c")
+				)
+				for root_index in 3:
+					draw_line(
+						point + Vector2(-36 + root_index * 18, -12),
+						point + Vector2(-15 + root_index * 20, 0),
+						Color("7c8151"),
+						5
+					)
+			else:
+				draw_texture_rect(
+					BUSH, Rect2(point - Vector2(46, 48), Vector2(92, 56)), false, Color("bdbe78")
+				)
 
 
 func _draw_cavern_growth(point: Vector2, kind: int) -> void:

@@ -2,8 +2,37 @@ class_name ForestChapters
 extends RefCounted
 ## Hand-built routes. Coordinates use the same feet-based scale as the fox.
 
-const TITLES := ["Emberwood", "Flooded Mill", "High Canopy", "Moss Caverns", "Sunlit Ridge"]
-const CAMPAIGN_BEST_KEY := "five_chapter_best_time"
+const TITLES := [
+	"Emberwood",
+	"Flooded Mill",
+	"High Canopy",
+	"Moss Caverns",
+	"Sunlit Ridge",
+	"Reedbank Trail",
+	"Willow Narrows",
+	"Broken Aqueduct",
+	"Heron Marsh",
+	"Riverwatch Falls",
+	"Frostpine Pass",
+	"Snowmelt Gorge",
+	"Slate Heights",
+	"Whitewater Steps",
+	"Cloudline Crossing",
+	"Copperbark Woods",
+	"Rootbound Ruins",
+	"Lantern Hollow",
+	"Sunleaf Crown",
+	"Heart of Emberwood"
+]
+const CAMPAIGN_BEST_KEY := "twenty_chapter_best_time"
+
+
+static func theme(index: int) -> StringName:
+	if index < 5:
+		return [&"forest", &"mill", &"canopy", &"cavern", &"ridge"][maxi(index, 0)]
+	if index < 10:
+		return &"river"
+	return &"frost" if index < 15 else &"ancient"
 
 
 static func has_boss(index: int) -> bool:
@@ -11,6 +40,8 @@ static func has_boss(index: int) -> bool:
 
 
 static func layout(index: int) -> Dictionary:
+	if index >= 5 and index < TITLES.size():
+		return ForestTrails.layout(index, TITLES[index])
 	match index:
 		1:
 			return _mill()
@@ -25,6 +56,8 @@ static func layout(index: int) -> Dictionary:
 
 
 static func route(index: int) -> Array:
+	if index >= 5 and index < TITLES.size():
+		return ForestTrails.layout(index, TITLES[index]).route
 	if index == 3:
 		return [
 			["walk", 300.0, 536.0],
@@ -302,7 +335,7 @@ static func _ridge() -> Dictionary:
 		"title": TITLES[4],
 		"width": 3600.0,
 		"gate": Vector2(3450, 536),
-		"gate_label": "The summit trail",
+		"gate_label": "Down to the river",
 		"ground": [Vector2(0, 610), Vector2(1000, 1450), Vector2(1910, 2410), Vector2(2780, 3600)],
 		"ledges":
 		[
@@ -355,6 +388,10 @@ static func _ridge() -> Dictionary:
 				"Three blocks when fresh. Change gear with Esc."
 			],
 			[Vector2(2400, 230), "A high roost", "A firefly is hiding above the last crossing."],
-			[Vector2(2850, 365), "The final stretch", "Watch the thorns. The summit gate is ahead."]
+			[
+				Vector2(2850, 365),
+				"The river beyond",
+				"Watch the thorns. Follow the pass down to the river."
+			]
 		]
 	}

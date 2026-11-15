@@ -45,6 +45,7 @@ var _equipment_label: Label
 var _equipment: ForestEquipment
 var _equipment_toggles: Dictionary = {}
 var _equipment_details: Dictionary = {}
+var _equipment_scrolls: Dictionary = {}
 var _toast_panel: PanelContainer
 var _toast_label: Label
 var _toast_tween: Tween
@@ -124,7 +125,7 @@ func show_title(best: float) -> void:
 	title.size = Vector2(318, 46)
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	menu.add_child(title)
-	_center_text(menu, "Five levels. Find 3 acorns in each.", 20, 77)
+	_center_text(menu, "%d levels. Find 3 acorns in each." % ForestChapters.TITLES.size(), 20, 77)
 	_center_text(menu, "Earn weapons and armor at campfires.", 18, 111, QUIET_TEXT)
 	var start := _button("Start adventure", true)
 	start.position = Vector2(222, 169)
@@ -165,6 +166,7 @@ func show_pause() -> void:
 	column.add_child(restart)
 	column.add_child(_settings())
 	resume.grab_focus()
+	_reveal_equipped_armor.call_deferred()
 
 
 func update_equipment(equipment: ForestEquipment, dash_ready: bool) -> void:
@@ -208,10 +210,12 @@ func show_stage_complete(
 
 
 func show_win(
-	time_text: String, gems: int, total: int, deaths: int, secret: bool, secret_total: int = 5
+	time_text: String, gems: int, total: int, deaths: int, secret: bool, secret_total: int = 0
 ) -> void:
+	if secret_total <= 0:
+		secret_total = ForestChapters.TITLES.size()
 	var column := _menu_column(Vector2(490, 376))
-	_add_centered(column, "The ridge is yours!", 28, true)
+	_add_centered(column, "Heart of Emberwood reached!", 28, true)
 	_add_centered(column, "Adventure complete", 21)
 	_add_centered(column, "Time: %s    Gems: %d of %d" % [time_text, gems, total], 19)
 	_add_centered(column, "Retries: %d" % deaths, 19)
@@ -367,6 +371,7 @@ func _open_menu(dimensions: Vector2, shade_alpha := 0.6) -> Control:
 	_motion_toggle = null
 	_equipment_toggles.clear()
 	_equipment_details.clear()
+	_equipment_scrolls.clear()
 	_header.hide()
 	_footer.hide()
 	_boss_band.hide()
@@ -425,13 +430,40 @@ func _equipment_menu() -> VBoxContainer:
 		var column := VBoxContainer.new()
 		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		column.add_theme_constant_override("separation", 6)
-		column.add_child(_label("Weapons" if category == &"weapon" else "Armor", 20, TEXT, true))
+		var title := "Weapons" if category == &"weapon" else "Armor · scroll for more"
+		column.add_child(_label(title, 20, TEXT, true))
 		columns.add_child(column)
+		var scroll := ScrollContainer.new()
+		scroll.custom_minimum_size.y = 260
+		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.follow_focus = true
+		scroll.get_v_scroll_bar().focus_mode = Control.FOCUS_NONE
+		column.add_child(scroll)
+		_equipment_scrolls[category] = scroll
+		var rows := VBoxContainer.new()
+		rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rows.add_theme_constant_override("separation", 6)
+		scroll.add_child(rows)
 		for item in ForestEquipment.ITEMS:
 			if item.category == category:
-				column.add_child(_equipment_row(item))
+				var row := _equipment_row(item)
+				rows.add_child(row)
+				var toggle: CheckButton = _equipment_toggles[item.id]
+				toggle.focus_entered.connect(scroll.ensure_control_visible.bind(row))
 	_sync_equipment_rows()
 	return equipment_menu
+
+
+func _reveal_equipped_armor() -> void:
+	if _equipment == null or not _equipment_scrolls.has(&"armor"):
+		return
+	var selected := _equipment.active_armor()
+	if not _equipment_toggles.has(selected):
+		return
+	var scroll: ScrollContainer = _equipment_scrolls[&"armor"]
+	var toggle: CheckButton = _equipment_toggles[selected]
+	scroll.ensure_control_visible(toggle.get_parent())
 
 
 func _equipment_row(item: Dictionary) -> VBoxContainer:

@@ -15,12 +15,17 @@ SUITES = (
     "game",
     "equipment",
     "loadout",
+    "armor_collection",
     "weapons",
     "expansion",
+    "journey",
     "interactions",
     "route",
+    "trails",
     "campaign",
 )
+
+SUITE_TIMEOUTS = {"game": 240, "trails": 450, "campaign": 600}
 
 
 def main() -> int:
@@ -35,6 +40,7 @@ def main() -> int:
             parser.error(f"unknown suite: {suite}")
     project = Path(__file__).resolve().parents[1]
     for suite in suites:
+        timeout = SUITE_TIMEOUTS.get(suite, 150)
         with tempfile.TemporaryDirectory(prefix="emberwood-tests-") as test_dir:
             environment = dict(
                 os.environ,
@@ -45,18 +51,18 @@ def main() -> int:
             try:
                 result = subprocess.run(
                     [
-                        str(project / "start-game.sh"),
+                        str(project / "emberwood"),
                         "--headless",
                         "--script",
                         f"res://tests/test_{suite}.gd",
                     ],
                     cwd=project,
                     env=environment,
-                    timeout=150,
+                    timeout=timeout,
                     check=False,
                 )
             except subprocess.TimeoutExpired:
-                print(f"The {suite} test suite exceeded its 150-second timeout.")
+                print(f"The {suite} test suite exceeded its {timeout}-second timeout.")
                 return 1
             if result.returncode:
                 return result.returncode

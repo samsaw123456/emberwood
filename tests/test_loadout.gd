@@ -11,8 +11,10 @@ func _initialize() -> void:
 
 func _run() -> void:
 	_test_reward_progression()
+	_test_later_rewards()
 	_test_choices()
 	_test_armor_budget()
+	_test_full_armor_budget()
 	_test_catchup_and_reset()
 	if failures.is_empty():
 		print("PASS: %d expanded loadout checks." % checks)
@@ -94,6 +96,25 @@ func _test_choices() -> void:
 	)
 
 
+func _test_later_rewards() -> void:
+	var gear := ForestEquipment.new()
+	for reward in [
+		[5, &"reed_mail", 4],
+		[10, &"frost_armor", 5],
+		[12, &"stoneplate", 6],
+		[15, &"copperbark_armor", 7],
+		[18, &"sunleaf_armor", 8]
+	]:
+		gear.rewards_at(reward[0], 0)
+		_check(not gear.is_unlocked(reward[1]), "Each new set waits for its own reward camp.")
+		_check(not gear.set_equipped(reward[1], true), "A locked later set cannot be selected.")
+		_check(gear.rewards_at(reward[0], 1) == [reward[1]], "Its second camp awards the new set.")
+		_check(gear.active_armor() == reward[1], "The new armor equips immediately.")
+		_check(gear.armor_capacity() == reward[2], "The new armor grants its promised capacity.")
+		_check(gear.rewards_at(reward[0], 1).is_empty(), "Repeated contact cannot duplicate armor.")
+	_check(gear.unlocked.size() == 11, "The complete adventure contains eleven gear rewards.")
+
+
 func _test_armor_budget() -> void:
 	var gear := ForestEquipment.new()
 	gear.rewards_at(4, 1)
@@ -129,11 +150,40 @@ func _test_armor_budget() -> void:
 	_check(not gear.absorb_hit(), "The next hit passes through spent ironwood armor.")
 
 
+func _test_full_armor_budget() -> void:
+	var gear := ForestEquipment.new()
+	gear.rewards_at(19, 1)
+	var sets := [
+		&"armor",
+		&"bark_armor",
+		&"ironwood_armor",
+		&"reed_mail",
+		&"frost_armor",
+		&"stoneplate",
+		&"copperbark_armor",
+		&"sunleaf_armor"
+	]
+	for armor in sets:
+		_check(gear.set_equipped(armor, true), "Every earned armor can be worn.")
+		_check(gear.armor_charge == 1, "Upgrading preserves all earlier absorbed damage.")
+		_check(
+			gear.absorb_hit() and gear.armor_charge == 0, "Each upgrade adds only its extra hit."
+		)
+	for armor in sets:
+		gear.set_equipped(armor, true)
+		_check(not gear.absorb_hit(), "No swap can exceed the eight-hit protection budget.")
+	gear.recharge()
+	_check(gear.armor_charge == 8, "A real repair restores all eight Sunleaf blocks.")
+	for hit in 8:
+		_check(gear.absorb_hit(), "Repaired Sunleaf armor absorbs each of its eight hits.")
+	_check(not gear.absorb_hit(), "A ninth hit cannot be absorbed before the next repair.")
+
+
 func _test_catchup_and_reset() -> void:
 	var gear := ForestEquipment.new()
-	_check(gear.rewards_at(4, 2).size() == 6, "A later checkpoint catches up all missed rewards.")
+	_check(gear.rewards_at(19, 2).size() == 11, "A later checkpoint catches up all missed rewards.")
 	_check(
-		gear.active_weapon() == &"seed_bomb" and gear.active_armor() == &"ironwood_armor",
+		gear.active_weapon() == &"seed_bomb" and gear.active_armor() == &"sunleaf_armor",
 		"Catchup equips the latest reward in each category."
 	)
 	gear.set_equipped(&"spear", true)

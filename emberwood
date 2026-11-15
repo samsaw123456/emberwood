@@ -1,9 +1,9 @@
 #!/bin/sh
 # Emberwood — launch the current game from this project.
 # In Zed: open this project, then choose the "Play Emberwood" task.
-# Current update: five levels; bow, spear, seed bombs; leaf, bark, ironwood armor.
-# Latest update: Moss Caverns, Sunlit Ridge, and six campfire gear rewards.
-# Playtest results and screenshots: docs/EXPANSION.md
+# Current adventure: 20 levels, 3 weapons, and 8 armor sets.
+# New trails cross riverlands, frostpine mountains, and the ancient forest.
+# Playtest results and screenshots: docs/TWENTY_LEVELS.md
 # Controls: A/D move, Space jump twice, Shift dash, J weapon, Esc gear, R retry.
 set -eu
 

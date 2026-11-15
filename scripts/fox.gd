@@ -245,31 +245,66 @@ func _draw_gear() -> void:
 
 func _draw_armor() -> void:
 	var armor := armor_id if not armor_id.is_empty() else &"armor"
-	var base := Color("90aa70")
-	var edge := Color("354e44")
-	if armor == &"bark_armor":
-		base = Color("b38a57")
-		edge = Color("63472e")
-	elif armor == &"ironwood_armor":
-		base = Color("83948c")
-		edge = Color("3a514e")
+	var definition := ForestEquipment.definition(armor)
+	var base: Color = definition.armor_color
+	var edge: Color = definition.armor_edge
 	if not armor_charged:
 		base = base.darkened(0.35)
 	_gear_art.draw_rect(Rect2(-7, -22, 16, 15), edge)
 	_gear_art.draw_rect(Rect2(-5, -22, 12, 12), base)
-	if armor == &"armor":
-		_gear_art.draw_rect(Rect2(-1, -21, 2, 13), Color("c3b171"))
-		_gear_art.draw_line(Vector2(-5, -18), Vector2(5, -14), Color("526b48"), 2)
-	else:
-		for x in [-3, 3]:
-			_gear_art.draw_line(Vector2(x, -21), Vector2(x - 1, -10), edge, 2)
-		_gear_art.draw_rect(Rect2(-9, -23, 7, 5), base.lightened(0.12))
-		_gear_art.draw_rect(Rect2(5, -23, 7, 5), base.lightened(0.12))
-		if armor == &"ironwood_armor":
-			for x in [-5, 5]:
-				_gear_art.draw_rect(Rect2(x, -19, 2, 2), Color("d5d4a8"))
-			_gear_art.draw_rect(Rect2(-6, -11, 14, 4), Color("b8c1ab"))
+	_draw_armor_pattern(definition.armor_art, base, edge)
 	_gear_art.draw_rect(Rect2(-5, -8, 12, 3), Color("a5784e"))
+
+
+func _draw_armor_pattern(art: StringName, base: Color, edge: Color) -> void:
+	match art:
+		&"leaf":
+			_gear_art.draw_rect(Rect2(-1, -21, 2, 13), Color("c3b171"))
+			_gear_art.draw_line(Vector2(-5, -18), Vector2(5, -14), Color("526b48"), 2)
+		&"bark", &"ironwood", &"copper":
+			for x in [-3, 3]:
+				_gear_art.draw_line(Vector2(x, -21), Vector2(x - 1, -10), edge, 2)
+			_gear_art.draw_rect(Rect2(-9, -23, 7, 5), base.lightened(0.12))
+			_gear_art.draw_rect(Rect2(5, -23, 7, 5), base.lightened(0.12))
+			if art == &"ironwood":
+				for x in [-5, 5]:
+					_gear_art.draw_rect(Rect2(x, -19, 2, 2), Color("d5d4a8"))
+				_gear_art.draw_rect(Rect2(-6, -11, 14, 4), Color("b8c1ab"))
+			elif art == &"copper":
+				_gear_art.draw_line(Vector2(-5, -22), Vector2(6, -9), edge, 3)
+				for point in [Vector2(-6, -21), Vector2(6, -21), Vector2(-5, -11), Vector2(5, -11)]:
+					_gear_art.draw_rect(Rect2(point, Vector2(3, 3)), Color("e1bd80"))
+		&"reeds":
+			for x in [-5, -1, 3, 7]:
+				_gear_art.draw_line(Vector2(x, -25), Vector2(x, -7), base.lightened(0.2), 2)
+			for y in [-20, -14, -9]:
+				_gear_art.draw_line(Vector2(-7, y), Vector2(9, y), edge, 2)
+		&"frost":
+			_gear_art.draw_rect(Rect2(-9, -26, 21, 6), Color("d8ded0"))
+			_gear_art.draw_rect(Rect2(-10, -20, 4, 14), base.darkened(0.1))
+			_gear_art.draw_rect(Rect2(-2, -20, 3, 12), Color("d8ded0"))
+			_gear_art.draw_rect(Rect2(7, -20, 4, 8), Color("d8ded0"))
+		&"slate":
+			for y in [-23, -17, -11]:
+				_gear_art.draw_rect(Rect2(-7, y, 16, 5), base.lightened(0.08))
+				_gear_art.draw_line(Vector2(-6, y + 4), Vector2(8, y + 4), edge, 1)
+			_gear_art.draw_rect(Rect2(-11, -25, 8, 8), edge)
+			_gear_art.draw_rect(Rect2(5, -25, 8, 8), edge)
+		&"sunleaf":
+			for side in [-1, 1]:
+				_gear_art.draw_colored_polygon(
+					PackedVector2Array(
+						[
+							Vector2(side * 2, -23),
+							Vector2(side * 13, -29),
+							Vector2(side * 10, -18),
+							Vector2(side * 3, -15)
+						]
+					),
+					base.lightened(0.15)
+				)
+			_gear_art.draw_rect(Rect2(-2, -20, 5, 7), Color("f0dc9a"))
+			_gear_art.draw_line(Vector2(-5, -11), Vector2(7, -11), edge, 2)
 
 
 func _draw_bow() -> void:

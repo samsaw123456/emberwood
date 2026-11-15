@@ -33,8 +33,10 @@ specific action hint. Toasts have a bounded width and can wrap.
 
 Pause, level completion, and victory are small menus over the current scene.
 Each has a direct action, and pause includes sound and gentle-motion settings.
-Pause contains two columns, Weapons and Armor, with three direct choices each.
-Descriptions explain behavior and locked choices name their reward checkpoint.
+Pause contains two columns: three weapons and eight armor sets. Armor scrolls
+inside the existing menu, follows keyboard focus, and reveals the selected set
+when reopened. Descriptions explain behavior and locked choices name their
+reward checkpoint.
 The play HUD reports dash readiness, the selected weapon, and armor blocks left
 in a single line. Each weapon and armor set has a distinct small silhouette on
 the fox; unused reward campfires display the corresponding item. Equipment
@@ -47,6 +49,19 @@ Moss Caverns uses layered rock faces, roots, and muted green stone. Sunlit Ridge
 opens into warm sky, angular granite, and distant pines. These landmarks support
 the new routes. Solid platform silhouettes and hazard contrast stay readable;
 the cave does not depend on glowing effects to establish its identity.
+
+The fifteen later levels follow three regions. Riverlands use reeds, willows,
+old aqueducts, and waterfalls; mountain routes use snow, slate, pines, and low
+cloud banks; ancient woods use copper foliage, rootbound ruins, lantern hollows,
+and a broad heartwood tree. Distant scenery has lower contrast than solid
+platforms. World hints use a restrained dark outline to remain readable over
+foliage. Region identity comes from terrain and landmarks, with the same clear
+controls throughout.
+
+Armor uses woven reeds, a lined winter coat, layered slate, riveted copperbark,
+and overlapping golden leaves. These small shapes distinguish the five new
+rewards on the fox and at campfires without introducing a separate inventory
+screen or large ornamental item cards.
 
 ## Verification
 
@@ -62,3 +77,8 @@ window with letterboxing. A control-text overlap with world signs was found and
 fixed before rerunning the input flow and both title captures. GDScript formatting,
 linting, and Godot parsing passed. Campaign checks are recorded in
 [PLAYTEST.md](PLAYTEST.md).
+
+The expanded armor menu was exercised with native Tab/Space and Escape at
+1152×648 and 800×600. Every gear choice was selected and focused armor scrolled
+into view. All eight worn sets were visually inspected together. New scenery
+and the longer adventure are recorded in [TWENTY_LEVELS.md](TWENTY_LEVELS.md).

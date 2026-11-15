@@ -33,18 +33,26 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	if chapter_index == 3:
-		_draw_caverns()
-		return
-	if chapter_index == 4:
-		_draw_ridge()
-		return
-	if chapter_index == 1:
-		_draw_mill_valley()
-		return
-	if chapter_index == 2:
-		_draw_high_branches()
-		return
+	match ForestChapters.theme(chapter_index):
+		&"mill":
+			_draw_mill_valley()
+		&"canopy":
+			_draw_high_branches()
+		&"cavern":
+			_draw_caverns()
+		&"ridge":
+			_draw_ridge()
+		&"river":
+			_draw_river_trail()
+		&"frost":
+			_draw_frost_trail()
+		&"ancient":
+			_draw_ancient_trail()
+		_:
+			_draw_emberwood()
+
+
+func _draw_emberwood() -> void:
 	var moonlight := smoothstep(2600.0, 4000.0, view_x)
 	_draw_sky(moonlight)
 	_draw_distant_woods(moonlight)
@@ -415,3 +423,310 @@ func _draw_ridge() -> void:
 			Color("8d8970")
 		)
 		draw_line(Vector2(x + 280, 470), Vector2(x + 290, 565), Color("716f5d"), 4)
+
+
+func _draw_river_trail() -> void:
+	var reach := chapter_index - 5
+	var sky: Color = [
+		Color("a4b8a4"), Color("9caf9c"), Color("b7bca6"), Color("9eafa4"), Color("aabdb0")
+	][reach]
+	draw_rect(Rect2(Vector2.ZERO, VIEW_SIZE), sky)
+	_draw_tree_layer(0.10, 370, Color("799184"), 0.64)
+	draw_rect(Rect2(0, 420, 1152, 228), Color("6e928b"))
+	for row in 5:
+		var drift := fposmod(view_x * 0.12 + (0 if reduced_motion else _time * 4), 230)
+		for index in range(-1, 6):
+			draw_rect(
+				Rect2(index * 230 - drift + row * 31, 439 + row * 32, 107, 3), Color("9bb2a0")
+			)
+	if reach == 2:
+		_draw_aqueduct(270.0 - view_x * 0.20)
+	elif reach == 4:
+		var fall_x := 720.0 - view_x * 0.17
+		draw_rect(Rect2(fall_x - 100, 200, 340, 370), Color("698576"))
+		_draw_distant_fall(Vector2(fall_x, 218), Vector2(90, 330), Color("b4cbc0"))
+		_draw_aqueduct(fall_x - 540)
+	else:
+		var offset := fposmod(view_x * 0.28, 470)
+		for index in range(-1, 4):
+			var x := index * 470.0 - offset
+			draw_texture_rect(TREE, Rect2(x, 270, 230, 260), false, Color(Color("75967f"), 0.36))
+			if reach == 1:
+				for strand in 6:
+					var strand_x := x + 30 + strand * 29
+					draw_line(
+						Vector2(strand_x, 300),
+						Vector2(strand_x + 8, 390 + strand % 3 * 27),
+						Color("64866b"),
+						4
+					)
+			elif reach == 3:
+				# Distant standing herons are scenery, below and behind the play surface.
+				var bird := Vector2(x + 290, 485)
+				draw_line(bird, bird + Vector2(0, -30), Color("536f69"), 3)
+				draw_line(bird + Vector2(0, -30), bird + Vector2(-11, -48), Color("536f69"), 5)
+				draw_line(bird + Vector2(-11, -48), bird + Vector2(-23, -46), Color("536f69"), 3)
+	var reeds_offset := fposmod(view_x * 0.40, 160)
+	for index in range(-1, 9):
+		var x := index * 160.0 - reeds_offset
+		for stem in 4:
+			var tip := Vector2(x + stem * 13, 516 - (stem % 3) * 18)
+			draw_line(Vector2(x + stem * 11, 610), tip, Color("547b65"), 3)
+			draw_rect(Rect2(tip - Vector2(3, 15), Vector2(6, 18)), Color("6e7860"))
+
+
+func _draw_aqueduct(start_x: float) -> void:
+	for index in 5:
+		var x := start_x + index * 200
+		# A missing upper span identifies the broken aqueduct without adding false platforms.
+		if index != 2:
+			draw_rect(Rect2(x - 7, 255, 214, 35), Color("74877b"))
+			draw_line(Vector2(x, 267), Vector2(x + 197, 267), Color("a1ad96"), 4)
+		draw_rect(Rect2(x - 9, 305, 30, 270), Color("697d72"))
+		draw_arc(Vector2(x + 102, 365), 94, PI, TAU, 24, Color("7d8d7e"), 21)
+		for row in 5:
+			draw_line(
+				Vector2(x - 8, 340 + row * 42), Vector2(x + 20, 340 + row * 42), Color("536e64"), 3
+			)
+
+
+func _draw_distant_fall(origin: Vector2, dimensions: Vector2, shade: Color) -> void:
+	draw_rect(Rect2(origin, dimensions), shade.darkened(0.12))
+	for strip in 5:
+		var width := dimensions.x / 6.0
+		draw_rect(
+			Rect2(origin + Vector2(strip * width + 4, 0), Vector2(width * 0.55, dimensions.y)),
+			shade
+		)
+	var shift := 0.0 if reduced_motion else fposmod(_time * 26, 52)
+	for row in int(dimensions.y / 52):
+		draw_line(
+			origin + Vector2(6, row * 52 + shift),
+			origin + Vector2(dimensions.x - 6, row * 52 + shift),
+			shade.lightened(0.12),
+			2
+		)
+
+
+func _draw_frost_trail() -> void:
+	var climb := chapter_index - 10
+	var sky: Color = [
+		Color("a8b9bf"), Color("b5c6ca"), Color("aebfc0"), Color("bdcbca"), Color("cbd3cd")
+	][climb]
+	draw_rect(Rect2(Vector2.ZERO, VIEW_SIZE), sky)
+	for layer in 3:
+		var spacing := 480.0
+		var drift := fposmod(view_x * (0.04 + layer * 0.05), spacing)
+		var stone: Color = [Color("92a9ac"), Color("748e94"), Color("536f79")][layer]
+		for index in range(-1, 4):
+			var x := index * spacing - drift
+			var peak := 185.0 + layer * 75 + sin(index * 4 + climb) * 32
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						Vector2(x - 60, 648),
+						Vector2(x + 160, peak),
+						Vector2(x + 220, peak + 75),
+						Vector2(x + 300, peak + 58),
+						Vector2(x + 490, 648)
+					]
+				),
+				stone
+			)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						Vector2(x + 108, peak + 94),
+						Vector2(x + 160, peak),
+						Vector2(x + 220, peak + 75),
+						Vector2(x + 186, peak + 61),
+						Vector2(x + 160, peak + 47)
+					]
+				),
+				Color("dce3d9").darkened(layer * 0.10)
+			)
+	if climb == 1 or climb == 3:
+		var fall_x := 690.0 - view_x * 0.16
+		_draw_distant_fall(Vector2(fall_x, 280), Vector2(55, 270), Color("c1d8d7"))
+	if climb == 4:
+		for cloud in 4:
+			var x := cloud * 360.0 - fposmod(view_x * 0.09, 360)
+			draw_rect(Rect2(x - 100, 388 + cloud % 2 * 33, 245, 18), Color("d0dad3"))
+			draw_rect(Rect2(x - 56, 374 + cloud % 2 * 33, 149, 18), Color("d0dad3"))
+	var offset := fposmod(view_x * 0.31, 410)
+	for index in range(-1, 4):
+		var x := index * 410.0 - offset
+		if climb != 2:
+			_draw_snow_pine(Vector2(x, 292), 0.9)
+			_draw_snow_pine(Vector2(x + 180, 360), 0.65)
+		else:
+			for slab in 4:
+				draw_colored_polygon(
+					PackedVector2Array(
+						[
+							Vector2(x + slab * 37, 590),
+							Vector2(x + slab * 37 + 43, 384 + slab * 19),
+							Vector2(x + slab * 37 + 67, 407 + slab * 19),
+							Vector2(x + slab * 37 + 61, 590)
+						]
+					),
+					Color("607d82")
+				)
+	if not reduced_motion:
+		for flake in 16:
+			var point := Vector2(
+				fposmod(flake * 173.0 - view_x * 0.22 + _time * 7, 1250) - 50,
+				fposmod(flake * 71 + _time * 10, 570)
+			)
+			draw_rect(Rect2(point, Vector2(2, 2)), Color("dce6df"))
+
+
+func _draw_snow_pine(origin: Vector2, scale_factor: float) -> void:
+	draw_texture_rect(
+		PINE, Rect2(origin, Vector2(150, 260) * scale_factor), false, Color(Color("7e9a93"), 0.38)
+	)
+	for tier in 3:
+		var middle := origin + Vector2(77, 42 + tier * 44) * scale_factor
+		var width := (19 + tier * 11) * scale_factor
+		draw_line(
+			middle - Vector2(width, 0),
+			middle + Vector2(width, 0),
+			Color(Color("cbd9d1"), 0.6),
+			5 * scale_factor
+		)
+
+
+func _draw_ancient_trail() -> void:
+	var depth := chapter_index - 15
+	var sky: Color = [
+		Color("a7aa7d"), Color("929d7c"), Color("6d8372"), Color("b5b184"), Color("b9b990")
+	][depth]
+	draw_rect(Rect2(Vector2.ZERO, VIEW_SIZE), sky)
+	_draw_tree_layer(0.07, 410, Color("778c6c"), 0.85)
+	var offset := fposmod(view_x * 0.25, 520)
+	for index in range(-1, 4):
+		var x := index * 520.0 - offset
+		var copper := Color("6a6e49") if depth != 2 else Color("4b6552")
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					Vector2(x - 15, 648),
+					Vector2(x + 49, 290),
+					Vector2(x + 58, -20),
+					Vector2(x + 107, -20),
+					Vector2(x + 101, 320),
+					Vector2(x + 155, 648)
+				]
+			),
+			copper
+		)
+		draw_polyline(
+			PackedVector2Array(
+				[Vector2(x + 72, 265), Vector2(x + 191, 190), Vector2(x + 295, 170)]
+			),
+			copper,
+			19
+		)
+		for leaf in 5:
+			var leaf_x := x - 24 + leaf * 64
+			var leaf_y := 60 + sin(leaf * 3.4 + index) * 25
+			draw_rect(
+				Rect2(leaf_x, leaf_y, 106, 64), Color("7f8c51") if depth < 3 else Color("a3a464")
+			)
+		if depth == 0:
+			for notch in 6:
+				draw_line(
+					Vector2(x + 61, 165 + notch * 55),
+					Vector2(x + 91, 152 + notch * 55),
+					Color("b18958"),
+					5
+				)
+		elif depth == 2:
+			var lantern := Vector2(x + 219, 235)
+			draw_line(lantern - Vector2(0, 55), lantern, Color("4d6250"), 3)
+			draw_rect(Rect2(lantern - Vector2(10, 0), Vector2(20, 27)), Color("596148"))
+			draw_rect(Rect2(lantern + Vector2(-6, 4), Vector2(12, 18)), Color("d6bf79"))
+		elif depth == 3:
+			draw_line(Vector2(x + 80, 365), Vector2(x + 300, 292), Color("77804c"), 12)
+			for leaf in 4:
+				draw_rect(Rect2(x + 145 + leaf * 42, 317 - leaf * 14, 33, 13), Color("b8b66b"))
+	if depth == 1:
+		_draw_rooted_ruins(210.0 - view_x * 0.16)
+	elif depth == 4:
+		_draw_heart_tree(760.0 - view_x * 0.14)
+	_draw_fireflies()
+
+
+func _draw_rooted_ruins(start_x: float) -> void:
+	for pillar in 4:
+		var x := start_x + pillar * 260
+		var top := 315.0 + pillar % 2 * 38
+		draw_rect(Rect2(x, top, 61, 270), Color("737e61"))
+		draw_rect(Rect2(x - 9, top - 13, 79, 23), Color("8c9371"))
+		for row in 5:
+			draw_line(
+				Vector2(x + 2, top + 33 + row * 43),
+				Vector2(x + 60, top + 33 + row * 43),
+				Color("596e53"),
+				3
+			)
+		draw_polyline(
+			PackedVector2Array(
+				[
+					Vector2(x + 17, top - 10),
+					Vector2(x + 44, top + 52),
+					Vector2(x + 20, top + 141),
+					Vector2(x + 49, top + 237)
+				]
+			),
+			Color("4f694d"),
+			9
+		)
+		draw_rect(Rect2(x + 14, top + 13, 23, 13), Color("a8a780"))
+
+
+func _draw_heart_tree(center_x: float) -> void:
+	# A single old tree anchors the last level; its roots stay behind the solid route.
+	var bark := Color("5b714e")
+	draw_colored_polygon(
+		PackedVector2Array(
+			[
+				Vector2(center_x - 190, 648),
+				Vector2(center_x - 80, 350),
+				Vector2(center_x - 63, 60),
+				Vector2(center_x + 65, 60),
+				Vector2(center_x + 92, 370),
+				Vector2(center_x + 240, 648)
+			]
+		),
+		bark
+	)
+	for side in [-1, 1]:
+		draw_polyline(
+			PackedVector2Array(
+				[
+					Vector2(center_x, 185),
+					Vector2(center_x + side * 140, 110),
+					Vector2(center_x + side * 260, 92)
+				]
+			),
+			bark,
+			36
+		)
+		draw_polyline(
+			PackedVector2Array(
+				[
+					Vector2(center_x + side * 65, 442),
+					Vector2(center_x + side * 220, 525),
+					Vector2(center_x + side * 330, 555)
+				]
+			),
+			bark,
+			29
+		)
+	for ring in 5:
+		draw_arc(
+			Vector2(center_x + 4, 303), 27 + ring * 9, -PI * 0.55, PI * 0.73, 24, Color("89905c"), 3
+		)
+	for crown in 7:
+		draw_rect(Rect2(center_x - 300 + crown * 84, 19 + crown % 3 * 17, 137, 82), Color("929c57"))

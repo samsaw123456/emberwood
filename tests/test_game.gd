@@ -279,7 +279,7 @@ func _test_chapters_and_boss() -> void:
 		is_equal_approx(
 			float(config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY, 0.0)), game.best_time
 		),
-		"Five-chapter records use a separate key from earlier shorter adventures."
+		"The expanded campaign records use a separate key from shorter adventures."
 	)
 	var finish_time: float = game.elapsed
 	await _step(5)
@@ -309,7 +309,7 @@ func _collect_acorns() -> void:
 
 func _test_later_chapters() -> void:
 	var old_boss: ForestBoss = game.boss
-	for chapter in [3, 4]:
+	for chapter in range(3, ForestChapters.TITLES.size()):
 		_press_button("Continue")
 		_check(game.stage_index == chapter, "Continue reaches the correct expanded chapter.")
 		_check(not is_instance_valid(game.boss), "Old Croak stays in High Canopy.")
@@ -325,9 +325,16 @@ func _test_later_chapters() -> void:
 		await _collect_acorns()
 		game.fox.reset_at(game.level.gate)
 		await _step(3)
-		var expected := Adventure.State.CHAPTER_COMPLETE if chapter == 3 else Adventure.State.WON
-		_check(game.state == expected, "Only the summit gate ends the adventure.")
-	_check(game.chapter_results.size() == 4, "All four earlier chapters contribute to the ending.")
+		var expected := (
+			Adventure.State.WON
+			if chapter == ForestChapters.TITLES.size() - 1
+			else Adventure.State.CHAPTER_COMPLETE
+		)
+		_check(game.state == expected, "Only the twentieth gate ends the adventure.")
+	_check(
+		game.chapter_results.size() == ForestChapters.TITLES.size() - 1,
+		"Every earlier chapter contributes to the ending."
+	)
 
 
 func _test_boss_pause_and_retry() -> void:
@@ -483,6 +490,7 @@ func _test_settings_reload() -> void:
 func _test_save_merging() -> void:
 	var config := ConfigFile.new()
 	config.set_value("game", "campaign_best_time", 42.0)
+	config.set_value("game", "five_chapter_best_time", 134.0)
 	config.set_value("game", ForestChapters.CAMPAIGN_BEST_KEY, 0.0)
 	config.set_value("settings", "muted", false)
 	config.set_value("settings", "reduced_motion", false)
@@ -493,7 +501,7 @@ func _test_save_merging() -> void:
 	var newer: Node2D = MAIN.instantiate()
 	root.add_child(newer)
 	await _step(2)
-	_check(older.best_time == 0.0, "A shorter three-chapter record is not used for five chapters.")
+	_check(older.best_time == 0.0, "Shorter campaign records are not used for twenty chapters.")
 	newer.best_time = 91.0
 	newer._save_settings()
 	newer._toggle_motion(true)
@@ -508,6 +516,10 @@ func _test_save_merging() -> void:
 	_check(
 		config.get_value("game", "campaign_best_time") == 42.0,
 		"The old three-chapter record is preserved separately."
+	)
+	_check(
+		config.get_value("game", "five_chapter_best_time") == 134.0,
+		"The old five-chapter record is also preserved separately."
 	)
 	_check(
 		config.get_value("settings", "reduced_motion"),

@@ -24,7 +24,10 @@ const ITEMS := [
 		"unlock_hint": "Emberwood: third campfire.",
 		"chapter": 0,
 		"camp": 2,
-		"capacity": 1
+		"capacity": 1,
+		"armor_color": Color("90aa70"),
+		"armor_edge": Color("354e44"),
+		"armor_art": &"leaf"
 	},
 	{
 		"id": &"spear",
@@ -47,7 +50,10 @@ const ITEMS := [
 		"unlock_hint": "High Canopy: second campfire.",
 		"chapter": 2,
 		"camp": 1,
-		"capacity": 2
+		"capacity": 2,
+		"armor_color": Color("b38a57"),
+		"armor_edge": Color("63472e"),
+		"armor_art": &"bark"
 	},
 	{
 		"id": &"seed_bomb",
@@ -74,7 +80,75 @@ const ITEMS := [
 		"unlock_hint": "Sunlit Ridge: second campfire.",
 		"chapter": 4,
 		"camp": 1,
-		"capacity": 3
+		"capacity": 3,
+		"armor_color": Color("83948c"),
+		"armor_edge": Color("3a514e"),
+		"armor_art": &"ironwood"
+	},
+	{
+		"id": &"reed_mail",
+		"name": "Reed mail",
+		"category": &"armor",
+		"description": "Woven reeds block 4 hits between camps.",
+		"unlock_hint": "Reedbank Trail: second campfire.",
+		"chapter": 5,
+		"camp": 1,
+		"capacity": 4,
+		"armor_color": Color("b6ad6a"),
+		"armor_edge": Color("4d6041"),
+		"armor_art": &"reeds"
+	},
+	{
+		"id": &"frost_armor",
+		"name": "Frost armor",
+		"category": &"armor",
+		"description": "A lined coat blocks 5 hits between camps.",
+		"unlock_hint": "Frostpine Pass: second campfire.",
+		"chapter": 10,
+		"camp": 1,
+		"capacity": 5,
+		"armor_color": Color("94b7b7"),
+		"armor_edge": Color("41626d"),
+		"armor_art": &"frost"
+	},
+	{
+		"id": &"stoneplate",
+		"name": "Stoneplate",
+		"category": &"armor",
+		"description": "Layered slate blocks 6 hits between camps.",
+		"unlock_hint": "Slate Heights: second campfire.",
+		"chapter": 12,
+		"camp": 1,
+		"capacity": 6,
+		"armor_color": Color("a9aaa3"),
+		"armor_edge": Color("505960"),
+		"armor_art": &"slate"
+	},
+	{
+		"id": &"copperbark_armor",
+		"name": "Copperbark armor",
+		"category": &"armor",
+		"description": "Riveted bark blocks 7 hits between camps.",
+		"unlock_hint": "Copperbark Woods: second campfire.",
+		"chapter": 15,
+		"camp": 1,
+		"capacity": 7,
+		"armor_color": Color("bc8559"),
+		"armor_edge": Color("68483b"),
+		"armor_art": &"copper"
+	},
+	{
+		"id": &"sunleaf_armor",
+		"name": "Sunleaf armor",
+		"category": &"armor",
+		"description": "Golden leaves block 8 hits between camps.",
+		"unlock_hint": "Sunleaf Crown: second campfire.",
+		"chapter": 18,
+		"camp": 1,
+		"capacity": 8,
+		"armor_color": Color("d1ba68"),
+		"armor_edge": Color("68703c"),
+		"armor_art": &"sunleaf"
 	}
 ]
 
