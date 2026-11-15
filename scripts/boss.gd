@@ -32,6 +32,7 @@ var wave_speed := 170.0
 var rest_duration := 2.1
 var crown_points := 0
 var fox: ForestFox
+var party: Array[ForestFox] = []
 var active := false
 var engaged := false
 var defeated := false
@@ -123,7 +124,14 @@ func _physics_process(delta: float) -> void:
 	_contact_cooldown = maxf(0, _contact_cooldown - delta)
 	_advance_phase()
 	_update_waves(delta)
-	_check_contact(delta)
+	var target := fox
+	if party.is_empty():
+		_check_contact(delta)
+	else:
+		for member in party:
+			fox = member
+			_check_contact(delta)
+	fox = target
 	queue_redraw()
 
 
@@ -154,6 +162,11 @@ func _advance_phase() -> void:
 
 func _warn() -> void:
 	_set_phase("warning")
+	if not party.is_empty():
+		fox = party[0]
+		for member in party:
+			if member.position.distance_to(position) < fox.position.distance_to(position):
+				fox = member
 	var target := fox.global_position.x if is_instance_valid(fox) else _home.x
 	# Lock the marker before launch. The fox always gets time to move clear.
 	landing_x = clampf(target, arena_min + 120, arena_max - 120)

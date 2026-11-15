@@ -20,6 +20,15 @@ const DASH_COOLDOWN := 0.65
 const BODY_SIZE := Vector2(22.0, 36.0)
 const ART_PATH := "res://assets/pixel/characters/sunnyland/fox-%s-frame-%02d.png"
 
+const NETWORK_ACTIONS := ["move_left", "move_right", "jump", "dash", "shoot"]
+
+var network_controlled := false
+var input_mask := 0
+var input_pressed := 0
+var input_released := 0
+var weapon_cooldown := 0.0
+var mushroom_cooldown := 0.0
+var player_number := 0
 var active := false
 var jumps_left := 2
 var facing := 1
@@ -63,7 +72,7 @@ var _discard_floor_contact := true
 
 
 func _ready() -> void:
-	collision_layer = 1
+	collision_layer = 2
 	collision_mask = 1
 	floor_snap_length = 6.0
 	floor_stop_on_slope = true
@@ -83,7 +92,11 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if not active:
+		input_pressed = 0
+		input_released = 0
 		return
+	mushroom_cooldown = maxf(0.0, mushroom_cooldown - delta)
+	weapon_cooldown = maxf(0.0, weapon_cooldown - delta)
 	dash_cooldown_left = maxf(0.0, dash_cooldown_left - delta)
 	# A teleport or external bounce invalidates the previous slide's floor contact.
 	var grounded := is_on_floor() and not _discard_floor_contact
@@ -99,7 +112,7 @@ func _physics_process(delta: float) -> void:
 		if _coyote_left <= 0.0 and jumps_left == 2:
 			jumps_left = 1
 	_update_jump_input(delta)
-	var direction := Input.get_axis("move_left", "move_right")
+	var direction := float(_pressed("move_right")) - float(_pressed("move_left"))
 	var acceleration := 2200.0 if grounded else 1500.0
 	if dash_left <= 0.0 and not is_zero_approx(direction):
 		facing = 1 if direction > 0.0 else -1
@@ -108,9 +121,9 @@ func _physics_process(delta: float) -> void:
 		dash_left = 0.0
 		_start_jump(not grounded and _coyote_left <= 0.0)
 		starting_jump = true
-	if not Input.is_action_pressed("dash"):
+	if not _pressed("dash"):
 		_ignore_dash_until_release = false
-	if Input.is_action_just_pressed("dash") and not _ignore_dash_until_release:
+	if _just_pressed("dash") and not _ignore_dash_until_release:
 		if can_dash() and not starting_jump:
 			_start_dash()
 	if dash_left > 0.0:
@@ -118,7 +131,7 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2(_dash_direction * DASH_SPEED * minf(1.0, dash_left / delta), 0.0)
 	else:
 		velocity.x = move_toward(velocity.x, direction * RUN_SPEED, acceleration * delta)
-	if Input.is_action_just_released("jump"):
+	if _just_released("jump"):
 		if _jump_cut_available and velocity.y < 0.0:
 			velocity.y *= 0.45
 		_jump_cut_available = false
@@ -134,8 +147,10 @@ func _physics_process(delta: float) -> void:
 	_redraw_gear()
 	queue_redraw()
 	# Resolve weapon input after movement so a same-tick turn uses the visible facing.
-	if Input.is_action_just_pressed("shoot"):
+	if _just_pressed("shoot"):
 		shot_requested.emit()
+	input_pressed = 0
+	input_released = 0
 
 
 func reset_at(location: Vector2) -> void:
@@ -147,12 +162,14 @@ func reset_at(location: Vector2) -> void:
 	_jump_buffer_left = 0.0
 	_jump_cut_available = false
 	dash_left = 0.0
+	weapon_cooldown = 0.0
+	mushroom_cooldown = 0.0
 	dash_cooldown_left = 0.0
 	_air_dash_available = true
 	_discard_floor_contact = true
 	# Holding jump through a retry must not turn into a new jump on respawn.
-	_ignore_jump_until_release = Input.is_action_pressed("jump")
-	_ignore_dash_until_release = Input.is_action_pressed("dash")
+	_ignore_jump_until_release = _pressed("jump")
+	_ignore_dash_until_release = _pressed("dash")
 	modulate = Color.WHITE
 	_redraw_gear()
 	queue_redraw()
@@ -186,9 +203,9 @@ func show_pose(animation: StringName) -> void:
 
 func _update_jump_input(delta: float) -> void:
 	_jump_buffer_left = maxf(0.0, _jump_buffer_left - delta)
-	if not Input.is_action_pressed("jump"):
+	if not _pressed("jump"):
 		_ignore_jump_until_release = false
-	if Input.is_action_just_pressed("jump") and not _ignore_jump_until_release:
+	if _just_pressed("jump") and not _ignore_jump_until_release:
 		_jump_buffer_left = JUMP_BUFFER_TIME
 
 
@@ -370,3 +387,59 @@ func _build_sprite() -> void:
 	sprite.sprite_frames = frames
 	add_child(sprite)
 	sprite.play(&"idle")
+
+
+func accept_input(mask: int) -> void:
+	mask &= 31
+	input_pressed |= mask & ~input_mask
+	input_released |= input_mask & ~mask
+	input_mask = mask
+
+
+func clear_network_input() -> void:
+	input_mask = 0
+	input_pressed = 0
+	input_released = 0
+
+
+func _pressed(action: String) -> bool:
+	if network_controlled:
+		return bool(input_mask & (1 << NETWORK_ACTIONS.find(action)))
+	return Input.is_action_pressed(action)
+
+
+func _just_pressed(action: String) -> bool:
+	if network_controlled:
+		return bool(input_pressed & (1 << NETWORK_ACTIONS.find(action)))
+	return Input.is_action_just_pressed(action)
+
+
+func _just_released(action: String) -> bool:
+	if network_controlled:
+		return bool(input_released & (1 << NETWORK_ACTIONS.find(action)))
+	return Input.is_action_just_released(action)
+
+
+func identify(number: int, local: bool) -> void:
+	player_number = number
+	var label := get_node_or_null("PlayerLabel") as Label
+	if number == 0:
+		if label:
+			label.queue_free()
+		return
+	if not label:
+		label = Label.new()
+		label.name = "PlayerLabel"
+		label.position = Vector2(-45, -78)
+		label.size.x = 90
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.add_theme_font_override("font", ForestHUD.BOLD_FONT)
+		label.add_theme_font_size_override("font_size", 16)
+		label.add_theme_color_override("font_outline_color", Color("142b27"))
+		label.add_theme_constant_override("outline_size", 5)
+		add_child(label)
+	label.text = "P%d%s" % [number, " · You" if local else ""]
+	label.add_theme_color_override(
+		"font_color",
+		[Color("ffcf88"), Color("9ee3ee"), Color("f4acd1"), Color("bef18c")][number - 1]
+	)

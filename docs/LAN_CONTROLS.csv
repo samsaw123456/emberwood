@@ -1,0 +1,227 @@
+id,binding,state,expected,actual,status,evidence
+native-001,a,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-a.png
+native-002,d,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-d.png
+native-003,w,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-w.png
+native-004,Shift_L,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-Shift_L.png
+native-005,Shift_R,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-Shift_R.png
+native-006,j,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-j.png
+native-007,r,title,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-title-r.png
+native-008,Left,title menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-title-Left.png
+native-009,Right,title menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-title-Right.png
+native-010,Up,title menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-title-Up.png
+native-011,Down,title menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-title-Down.png
+native-012,Tab,title menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-title-Tab.png
+native-013,Shift+Tab,title menu,Backward keyboard focus navigation,Backward keyboard focus navigation,passed,build/lan-audit/native/menu-title-back-tab.png
+native-014,Tab + Enter,title,Focus and open LAN menu,Focus and open LAN menu,passed,build/lan-audit/native/lan-menu.png
+native-015,Left mouse / Back,LAN menu,Return to title,Return to title,passed,build/lan-audit/native/back-title.png
+native-016,Left mouse / Host,LAN menu,Host lobby; Start disabled with one player,Host lobby; Start disabled with one player,passed,build/lan-audit/native/one-player-lobby.png
+native-017,Enter / empty address,LAN menu,Show address error and remain usable,Show address error and remain usable,passed,build/lan-audit/native/invalid-address.png
+native-018,Address typing + Enter,LAN menu,P2 joins host,P2 joins host,passed,build/lan-audit/native/p2-lobby.png
+native-019,Left mouse / Join,LAN menu,P3 joins host,P3 joins host,passed,build/lan-audit/native/p3-lobby.png
+native-020,Address typing + Enter,LAN menu,P4 joins host,P4 joins host,passed,build/lan-audit/native/p4-lobby.png
+native-021,a,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-a.png
+native-022,d,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-d.png
+native-023,w,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-w.png
+native-024,Shift_L,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-Shift_L.png
+native-025,Shift_R,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-Shift_R.png
+native-026,j,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-j.png
+native-027,r,lobby,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-lobby-r.png
+native-028,Left,lobby menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-lobby-Left.png
+native-029,Right,lobby menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-lobby-Right.png
+native-030,Up,lobby menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-lobby-Up.png
+native-031,Down,lobby menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-lobby-Down.png
+native-032,Tab,lobby menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-lobby-Tab.png
+native-033,Shift+Tab,lobby menu,Backward keyboard focus navigation,Backward keyboard focus navigation,passed,build/lan-audit/native/menu-lobby-back-tab.png
+native-034,Left mouse / Start co-op,lobby,All four players enter shared world,All four players enter shared world,passed,build/lan-audit/native/four-players.png
+native-035,D,P3 playing,"Own fox moves right, independently","Own fox moves right, independently",passed,build/lan-audit/native/p3-movement.png
+native-036,D,P4 playing,"Own fox moves right, independently","Own fox moves right, independently",passed,build/lan-audit/native/p4-movement.png
+native-037,a,host playing,Moves screen-left,Moves screen-left,passed,"build/lan-audit/native/host-a-held.png, host-a-released.png"
+native-038,Left,host playing,Moves screen-left,Moves screen-left,passed,"build/lan-audit/native/host-Left-held.png, host-Left-released.png"
+native-039,d,host playing,Moves screen-right,Moves screen-right,passed,"build/lan-audit/native/host-d-held.png, host-d-released.png"
+native-040,Right,host playing,Moves screen-right,Moves screen-right,passed,"build/lan-audit/native/host-Right-held.png, host-Right-released.png"
+native-041,space,host playing,"Jump, release, double jump; no third jump","Jump, release, double jump; no third jump",passed,"build/lan-audit/native/host-space-jump.png, host-space-double.png"
+native-042,w,host playing,"Jump, release, double jump; no third jump","Jump, release, double jump; no third jump",passed,"build/lan-audit/native/host-w-jump.png, host-w-double.png"
+native-043,Up,host playing,"Jump, release, double jump; no third jump","Jump, release, double jump; no third jump",passed,"build/lan-audit/native/host-Up-jump.png, host-Up-double.png"
+native-044,Shift_L,host playing,"Dash right once while held, then recover","Dash right once while held, then recover",passed,build/lan-audit/native/host-Shift_L-dash.png
+native-045,Shift_R,host playing,"Dash right once while held, then recover","Dash right once while held, then recover",passed,build/lan-audit/native/host-Shift_R-dash.png
+native-046,A+D; release A,host playing,Opposing directions stop; remaining D moves right,Opposing directions stop; remaining D moves right,passed,build/lan-audit/native/host-opposing.png
+native-047,A then Shift,host playing,Facing-left dash moves screen-left,Facing-left dash moves screen-left,passed,build/lan-audit/native/host-dash-left.png
+native-048,Escape,host playing / paused,Pause all four; movement disabled; resume,Pause all four; movement disabled; resume,passed,build/lan-audit/native/host-Escape-paused.png
+native-049,p,host playing / paused,Pause all four; movement disabled; resume,Pause all four; movement disabled; resume,passed,build/lan-audit/native/host-p-paused.png
+native-050,D + focus loss + release,host playing,Team pauses; no stuck movement after resume,Team pauses; no stuck movement after resume,passed,build/lan-audit/native/host-focus-recovery.png
+native-051,a,guest playing,Moves screen-left,Moves screen-left,passed,"build/lan-audit/native/guest-a-held.png, guest-a-released.png"
+native-052,Left,guest playing,Moves screen-left,Moves screen-left,passed,"build/lan-audit/native/guest-Left-held.png, guest-Left-released.png"
+native-053,d,guest playing,Moves screen-right,Moves screen-right,passed,"build/lan-audit/native/guest-d-held.png, guest-d-released.png"
+native-054,Right,guest playing,Moves screen-right,Moves screen-right,passed,"build/lan-audit/native/guest-Right-held.png, guest-Right-released.png"
+native-055,space,guest playing,"Jump, release, double jump; no third jump","Jump, release, double jump; no third jump",passed,"build/lan-audit/native/guest-space-jump.png, guest-space-double.png"
+native-056,w,guest playing,"Jump, release, double jump; no third jump","Jump, release, double jump; no third jump",passed,"build/lan-audit/native/guest-w-jump.png, guest-w-double.png"
+native-057,Up,guest playing,"Jump, release, double jump; no third jump","Jump, release, double jump; no third jump",passed,"build/lan-audit/native/guest-Up-jump.png, guest-Up-double.png"
+native-058,Shift_L,guest playing,"Dash right once while held, then recover","Dash right once while held, then recover",passed,build/lan-audit/native/guest-Shift_L-dash.png
+native-059,Shift_R,guest playing,"Dash right once while held, then recover","Dash right once while held, then recover",passed,build/lan-audit/native/guest-Shift_R-dash.png
+native-060,A+D; release A,guest playing,Opposing directions stop; remaining D moves right,Opposing directions stop; remaining D moves right,passed,build/lan-audit/native/guest-opposing.png
+native-061,A then Shift,guest playing,Facing-left dash moves screen-left,Facing-left dash moves screen-left,passed,build/lan-audit/native/guest-dash-left.png
+native-062,Escape,guest playing / paused,Pause all four; movement disabled; resume,Pause all four; movement disabled; resume,passed,build/lan-audit/native/guest-Escape-paused.png
+native-063,p,guest playing / paused,Pause all four; movement disabled; resume,Pause all four; movement disabled; resume,passed,build/lan-audit/native/guest-p-paused.png
+native-064,D + focus loss + release,guest playing,Team pauses; no stuck movement after resume,Team pauses; no stuck movement after resume,passed,build/lan-audit/native/guest-focus-recovery.png
+native-065,"J (press, hold, release, repeat)",p1 playing,One visible shot per press; no held autofire,One visible shot per press; no held autofire,passed,build/lan-audit/native/p1-J-bow.png
+native-066,"J (press, hold, release, repeat)",p2 playing,One visible shot per press; no held autofire,One visible shot per press; no held autofire,passed,build/lan-audit/native/p2-J-bow.png
+native-067,R,guest playing / respawning,Party returns to earned camp with bow,Party returns to earned camp with bow,passed,build/lan-audit/native/party-at-camp.png
+native-068,D into spikes,guest playing,Visible failure and team retry,Visible failure and team retry,passed,build/lan-audit/native/failure-recovered.png
+native-069,M,p1 playing,Actual audio on/off/restored peaks 2425/0/2425,Actual audio on/off/restored peaks 2425/0/2425,passed,build/lan-audit/native/p1-mute-recovery.png
+native-070,Left mouse / Sound and Gentle motion,p1 paused,Toggle local settings with visible checkmarks,Toggle local settings with visible checkmarks,passed,build/lan-audit/native/p1-settings.png
+native-071,M,p2 playing,Actual audio on/off/restored peaks 2425/0/2425,Actual audio on/off/restored peaks 2425/0/2425,passed,build/lan-audit/native/p2-mute-recovery.png
+native-072,Left mouse / Sound and Gentle motion,p2 paused,Toggle local settings with visible checkmarks,Toggle local settings with visible checkmarks,passed,build/lan-audit/native/p2-settings.png
+native-073,a,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-a.png
+native-074,d,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-d.png
+native-075,w,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-w.png
+native-076,Shift_L,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-Shift_L.png
+native-077,Shift_R,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-Shift_R.png
+native-078,j,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-j.png
+native-079,r,guest-paused,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-guest-paused-r.png
+native-080,Left,guest-paused menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-guest-paused-Left.png
+native-081,Right,guest-paused menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-guest-paused-Right.png
+native-082,Up,guest-paused menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-guest-paused-Up.png
+native-083,Down,guest-paused menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-guest-paused-Down.png
+native-084,Tab,guest-paused menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-guest-paused-Tab.png
+native-085,Shift+Tab,guest-paused menu,Backward keyboard focus navigation,Backward keyboard focus navigation,passed,build/lan-audit/native/menu-guest-paused-back-tab.png
+native-086,Tab + Space / bow,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-bow.png
+native-087,Tab + Space / spear,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-spear.png
+native-088,Tab + Space / seed_bomb,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-seed_bomb.png
+native-089,Tab + Space / thorn_fan,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-thorn_fan.png
+native-090,Tab + Space / sunwood_lance,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-sunwood_lance.png
+native-091,Tab + Space / armor,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-armor.png
+native-092,Tab + Space / bark_armor,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-bark_armor.png
+native-093,Tab + Space / ironwood_armor,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-ironwood_armor.png
+native-094,Tab + Space / reed_mail,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-reed_mail.png
+native-095,Tab + Space / frost_armor,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-frost_armor.png
+native-096,Tab + Space / stoneplate,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-stoneplate.png
+native-097,Tab + Space / copperbark_armor,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-copperbark_armor.png
+native-098,Tab + Space / sunleaf_armor,host gear menu,Scroll selection into view and equip for team,Scroll selection into view and equip for team,passed,build/lan-audit/native/gear-focus-sunleaf_armor.png
+native-099,J,guest / Bow,Selected weapon appears in all worlds,Selected weapon appears in all worlds,passed,build/lan-audit/native/guest-weapon-bow.png
+native-100,J,guest / Throwing spear,Selected weapon appears in all worlds,Selected weapon appears in all worlds,passed,build/lan-audit/native/guest-weapon-spear.png
+native-101,J,guest / Seed bombs,Selected weapon appears in all worlds,Selected weapon appears in all worlds,passed,build/lan-audit/native/guest-weapon-seed_bomb.png
+native-102,J,guest / Thorn fan,Selected weapon appears in all worlds,Selected weapon appears in all worlds,passed,build/lan-audit/native/guest-weapon-thorn_fan.png
+native-103,J,guest / Sunwood lance,Selected weapon appears in all worlds,Selected weapon appears in all worlds,passed,build/lan-audit/native/guest-weapon-sunwood_lance.png
+native-104,a,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-a.png
+native-105,d,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-d.png
+native-106,w,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-w.png
+native-107,Shift_L,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-Shift_L.png
+native-108,Shift_R,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-Shift_R.png
+native-109,j,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-j.png
+native-110,r,chapter-complete,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-chapter-complete-r.png
+native-111,Left,chapter-complete menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-chapter-complete-Left.png
+native-112,Right,chapter-complete menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-chapter-complete-Right.png
+native-113,Up,chapter-complete menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-chapter-complete-Up.png
+native-114,Down,chapter-complete menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-chapter-complete-Down.png
+native-115,Tab,chapter-complete menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-chapter-complete-Tab.png
+native-116,Shift+Tab,chapter-complete menu,Backward keyboard focus navigation,Backward keyboard focus navigation,passed,build/lan-audit/native/menu-chapter-complete-back-tab.png
+native-117,Left mouse / Continue,chapter complete,Host advances all four worlds,Host advances all four worlds,passed,build/lan-audit/native/guest-next-chapter.png
+native-118,a,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-a.png
+native-119,d,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-d.png
+native-120,w,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-w.png
+native-121,Shift_L,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-Shift_L.png
+native-122,Shift_R,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-Shift_R.png
+native-123,j,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-j.png
+native-124,r,won,"No gameplay movement, shot or retry","No gameplay movement, shot or retry",passed,build/lan-audit/native/disabled-won-r.png
+native-125,Left,won menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-won-Left.png
+native-126,Right,won menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-won-Right.png
+native-127,Up,won menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-won-Up.png
+native-128,Down,won menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-won-Down.png
+native-129,Tab,won menu,Keyboard focus navigation; fox stays still,Keyboard focus navigation; fox stays still,passed,build/lan-audit/native/menu-won-Tab.png
+native-130,Shift+Tab,won menu,Backward keyboard focus navigation,Backward keyboard focus navigation,passed,build/lan-audit/native/menu-won-back-tab.png
+native-131,Left mouse / Explore again,won,Reset party to first level,Reset party to first level,passed,build/lan-audit/native/restarted-party.png
+native-132,Left mouse / Leave LAN game,paused guest,Leave cleanly; other players remain,Leave cleanly; other players remain,passed,build/lan-audit/native/guest-left.png
+native-133,Left mouse / Close LAN game,paused host,All remaining guests return to title,All remaining guests return to title,passed,build/lan-audit/native/host-closed.png
+edges-001,Escape,title,Remain on title,Remain on title,passed,build/lan-audit/edges/edge-000.png
+edges-002,p,title,Remain on title,Remain on title,passed,build/lan-audit/edges/edge-001.png
+edges-003,Keypad Enter,solo title,Start adventure,Start adventure,passed,build/lan-audit/edges/edge-002.png
+edges-004,Space,solo pause,Activate Keep exploring,Activate Keep exploring,passed,build/lan-audit/edges/edge-003.png
+edges-005,"Left mouse / pause, Enter / resume",solo playing,Pause and resume,Pause and resume,passed,build/lan-audit/edges/edge-004.png
+edges-006,Escape,LAN form,No gameplay action,No gameplay action,passed,build/lan-audit/edges/edge-005.png
+edges-007,p,LAN form,No gameplay action,No gameplay action,passed,build/lan-audit/edges/edge-006.png
+edges-008,j,LAN form,No gameplay action,No gameplay action,passed,build/lan-audit/edges/edge-007.png
+edges-009,r,LAN form,No gameplay action,No gameplay action,passed,build/lan-audit/edges/edge-008.png
+edges-010,"Digits, period, Backspace, Delete, Home, End, Ctrl+A",address field,Text edits match displayed address,Text edits match displayed address,passed,build/lan-audit/edges/edge-009.png
+edges-011,a,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-010.png
+edges-012,d,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-011.png
+edges-013,w,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-012.png
+edges-014,Up,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-013.png
+edges-015,Left,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-014.png
+edges-016,Right,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-015.png
+edges-017,Shift_L,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-016.png
+edges-018,Shift_R,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-017.png
+edges-019,j,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-018.png
+edges-020,r,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-019.png
+edges-021,Escape,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-020.png
+edges-022,p,connecting,No gameplay or accidental join,No gameplay or accidental join,passed,build/lan-audit/edges/edge-021.png
+edges-023,Left mouse / Cancel,connecting,Cancel returns to title,Cancel returns to title,passed,build/lan-audit/edges/edge-022.png
+edges-024,Escape,lobby,Remain in lobby,Remain in lobby,passed,build/lan-audit/edges/edge-023.png
+edges-025,p,lobby,Remain in lobby,Remain in lobby,passed,build/lan-audit/edges/edge-024.png
+edges-026,Space / Leave lobby,one-player lobby,Leave lobby and release port,Leave lobby and release port,passed,build/lan-audit/edges/edge-025.png
+edges-027,Enter / Start co-op,two-player lobby,Both players begin,Both players begin,passed,build/lan-audit/edges/edge-026.png
+edges-028,Left+Right,edge0 playing,Combined input and release produce expected movement,Combined input and release produce expected movement,passed,build/lan-audit/edges/edge-027.png
+edges-029,d+space,edge0 playing,Combined input and release produce expected movement,Combined input and release produce expected movement,passed,build/lan-audit/edges/edge-028.png
+edges-030,d+Shift_L,edge0 playing,Combined input and release produce expected movement,Combined input and release produce expected movement,passed,build/lan-audit/edges/edge-029.png
+edges-031,Left+Right,edge1 playing,Combined input and release produce expected movement,Combined input and release produce expected movement,passed,build/lan-audit/edges/edge-030.png
+edges-032,d+space,edge1 playing,Combined input and release produce expected movement,Combined input and release produce expected movement,passed,build/lan-audit/edges/edge-031.png
+edges-033,d+Shift_L,edge1 playing,Combined input and release produce expected movement,Combined input and release produce expected movement,passed,build/lan-audit/edges/edge-032.png
+edges-034,R,host playing,Team enters retry,Team enters retry,passed,build/lan-audit/edges/edge-033.png
+edges-035,a,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-034.png
+edges-036,d,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-035.png
+edges-037,Left,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-036.png
+edges-038,Right,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-037.png
+edges-039,space,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-038.png
+edges-040,w,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-039.png
+edges-041,Up,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-040.png
+edges-042,Shift_L,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-041.png
+edges-043,Shift_R,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-042.png
+edges-044,j,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-043.png
+edges-045,r,retry animation,"No movement, shot, extra death or jump","No movement, shot, extra death or jump",passed,build/lan-audit/edges/edge-044.png
+edges-046,Escape,retry / paused,Pause and resume retry on every peer,Pause and resume retry on every peer,passed,build/lan-audit/edges/edge-045.png
+edges-047,p,retry / paused,Pause and resume retry on every peer,Pause and resume retry on every peer,passed,build/lan-audit/edges/edge-046.png
+edges-048,Held Space across retry,guest retry / playing,Release required before new jump,Release required before new jump,passed,build/lan-audit/edges/edge-047.png
+edges-049,Left mouse / Bow,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-048.png
+edges-050,Left mouse / Throwing spear,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-049.png
+edges-051,Left mouse / Seed bombs,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-050.png
+edges-052,Left mouse / Thorn fan,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-051.png
+edges-053,Left mouse / Sunwood lance,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-052.png
+edges-054,Left mouse / Leaf armor,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-053.png
+edges-055,Left mouse / Bark armor,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-054.png
+edges-056,Left mouse / Ironwood armor,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-055.png
+edges-057,Left mouse / Reed mail,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-056.png
+edges-058,Left mouse / Frost armor,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-057.png
+edges-059,Left mouse / Stoneplate,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-058.png
+edges-060,Left mouse / Copperbark armor,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-059.png
+edges-061,Left mouse / Sunleaf armor,host equipment,Toggle selected team item,Toggle selected team item,passed,build/lan-audit/edges/edge-060.png
+edges-062,Wheel up,equipment,Scroll armor choices,Scroll armor choices,passed,build/lan-audit/edges/edge-061.png
+edges-063,Wheel down,equipment,Scroll armor choices,Scroll armor choices,passed,build/lan-audit/edges/edge-062.png
+edges-064,J against guardian,guest boss rest,Guardian loses health from 3 to 2,Guardian loses health from 3 to 2,passed,build/lan-audit/edges/edge-063.png
+edges-065,J against guardian,guest boss rest,Guardian loses health from 2 to 1,Guardian loses health from 2 to 1,passed,build/lan-audit/edges/edge-064.png
+edges-066,J against guardian,guest boss rest,Guardian loses health from 1 to 0,Guardian loses health from 1 to 0,passed,build/lan-audit/edges/edge-065.png
+edges-067,Guest boss fight,playing,Shared guardian victory and open gate,Shared guardian victory and open gate,passed,build/lan-audit/edges/edge-066.png
+edges-068,M,edge0 paused,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-067.png
+edges-069,M,edge1 paused,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-068.png
+edges-070,M,edge0 retry,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-069.png
+edges-071,M,edge1 retry,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-070.png
+edges-072,M,edge0 chapter complete,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-071.png
+edges-073,Escape,chapter complete,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-072.png
+edges-074,p,chapter complete,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-073.png
+edges-075,M,edge1 chapter complete,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-074.png
+edges-076,Escape,chapter complete,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-075.png
+edges-077,p,chapter complete,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-076.png
+edges-078,Left mouse / Restart all chapters,host pause,Both players restart at chapter one,Both players restart at chapter one,passed,build/lan-audit/edges/edge-077.png
+edges-079,M,edge0 won,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-078.png
+edges-080,Escape,won,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-079.png
+edges-081,p,won,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-080.png
+edges-082,M,edge1 won,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-081.png
+edges-083,Escape,won,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-082.png
+edges-084,p,won,Results stay open,Results stay open,passed,build/lan-audit/edges/edge-083.png
+edges-085,Left mouse / Leave LAN game,guest won,Return to title,Return to title,passed,build/lan-audit/edges/edge-084.png
+edges-086,Left mouse / Close LAN game,host won,Close session and return to title,Close session and return to title,passed,build/lan-audit/edges/edge-085.png
+edges-087,M,title,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-086.png
+edges-088,M,LAN form,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-087.png
+edges-089,M,lobby,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-088.png
+edges-090,M,connecting,Local sound setting changes with visible feedback,Local sound setting changes with visible feedback,passed,build/lan-audit/edges/edge-089.png
+title-controls-001,Left mouse / Sound,title,Visible local setting toggles,Visible local setting toggles,passed,build/lan-audit/title-controls/title-muted.png
+title-controls-002,Left mouse / Gentle motion,title,Visible local setting toggles,Visible local setting toggles,passed,build/lan-audit/title-controls/title-motion.png
+title-controls-003,Left mouse / Start adventure,title,Solo adventure starts,Solo adventure starts,passed,build/lan-audit/title-controls/title-mouse-start.png

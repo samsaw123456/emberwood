@@ -122,3 +122,11 @@ Confirm that:
 - The game can be restarted without reopening the editor.
 - Referenced files use repository-relative paths and exist.
 - The final message includes short play instructions and asks what the child wants to add next.
+
+## Publishing updates
+
+The user requires every Emberwood update to update both GitHub and the installed
+application. Publish this repository to its `origin` (samsaw123456/emberwood), not
+`upstream`. Refresh the Applications launcher and build/publish the current Linux
+installer with a new version after verification. Preserve personal saves and
+unrelated changes. See docs/LAN.md and packaging/README.md for current commands.

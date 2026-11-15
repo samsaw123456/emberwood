@@ -10,7 +10,7 @@ from pathlib import Path
 
 from install_app import desktop_entry
 
-VERSION = "1.3.1"
+VERSION = "1.4.0"
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -93,13 +93,14 @@ def main() -> None:
             "Open Emberwood from your Applications menu. No internet is needed to play.\n"
             "A/D: move; Space: jump twice; Shift: dash; J: weapon; Esc: gear/pause; R: retry.\n"
             "Collect three acorns per level. Earn equipment at campfires.\n"
+            "LAN co-op: Host a game, then join its address on the same network.\n"
             "Source and full illustrated guides: https://github.com/samsaw123456/emberwood\n"
             "Code license: copyright. Art: assets/CREDITS.md and assets/licenses/.\n"
             "Fonts: assets/fonts/LICENSE.txt. Engine: packaging/licenses/.\n",
         )
         (documentation / "changelog.gz").write_bytes(
             gzip.compress(
-                f"Emberwood {VERSION}: remove treasure chests, leaf shields and the firefly companion.\n".encode(),
+                f"Emberwood {VERSION}: add local 2-4 player LAN co-op.\n".encode(),
                 mtime=0,
             )
         )

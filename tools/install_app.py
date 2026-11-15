@@ -16,13 +16,13 @@ def desktop_entry(launcher: Path) -> str:
         "[Desktop Entry]\n"
         "Type=Application\n"
         "Name=Emberwood\n"
-        "Comment=Explore twenty forest levels. Play offline.\n"
+        "Comment=Explore twenty forest levels solo or with 2-4 players on LAN.\n"
         f'Exec="{executable}"\n'
         "Icon=emberwood\n"
         "Terminal=false\n"
         "StartupWMClass=Emberwood - Forest Adventure\n"
         "Categories=Game;AdventureGame;\n"
-        "Keywords=fox;forest;platformer;offline;\n"
+        "Keywords=fox;forest;platformer;offline;LAN;co-op;\n"
     )
 
 

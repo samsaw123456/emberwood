@@ -6,7 +6,7 @@ config/name="Emberwood - Forest Adventure"
 config/icon="res://assets/app/emberwood.png"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/description="Twenty forest adventures through riverlands, snowy mountains and ancient woods, with five weapons, eight armor sets and six animal bosses."
+config/description="Twenty forest adventures through riverlands, snowy mountains and ancient woods, with five weapons, eight armor sets and six animal bosses. Play solo or in 2–4 player LAN co-op."
 
 [display]
 window/size/viewport_width=1152

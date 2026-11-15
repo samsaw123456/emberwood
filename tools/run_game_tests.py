@@ -9,6 +9,7 @@ from pathlib import Path
 
 SUITES = (
     "fox",
+    "input_repeat",
     "platform",
     "boss",
     "guardians",

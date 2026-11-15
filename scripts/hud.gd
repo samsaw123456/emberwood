@@ -2,6 +2,13 @@ class_name ForestHUD
 extends CanvasLayer
 ## Readable game controls and clear lettering over the forest.
 
+signal lan_requested
+signal host_requested
+signal join_requested(address: String)
+signal lan_start_requested
+signal leave_requested
+signal message_shown(message: String)
+
 signal start_requested
 signal resume_requested
 signal restart_requested
@@ -19,6 +26,10 @@ const GOLD := Color("efc16f")
 const FOREST := Color("203c34")
 const EDGE := Color("738c60")
 
+var lan_session := false
+var lan_host := false
+var lobby_visible := false
+
 var muted := false:
 	set(value):
 		muted = value
@@ -31,6 +42,8 @@ var reduced_motion := false:
 		if is_instance_valid(_motion_toggle):
 			_motion_toggle.set_pressed_no_signal(reduced_motion)
 
+var _lan_error: Label
+var _best := 0.0
 var _screen: Control
 var _overlay: Control
 var _header: Control
@@ -81,6 +94,7 @@ func _ready() -> void:
 
 
 func show_title(best: float) -> void:
+	_best = best
 	var menu := _open_menu(Vector2(680, 432), 0.25)
 	menu.position.y = 74
 	var title := _label("Emberwood", 38, GOLD, true)
@@ -95,8 +109,13 @@ func show_title(best: float) -> void:
 	start.size.x = 236
 	start.pressed.connect(func() -> void: start_requested.emit())
 	menu.add_child(start)
+	var multiplayer_button := _button("LAN co-op · 2–4 players", false)
+	multiplayer_button.position = Vector2(190, 224)
+	multiplayer_button.size.x = 300
+	multiplayer_button.pressed.connect(func() -> void: lan_requested.emit())
+	menu.add_child(multiplayer_button)
 	var settings := CenterContainer.new()
-	settings.position = Vector2(0, 233)
+	settings.position = Vector2(0, 286)
 	settings.size = Vector2(680, 44)
 	settings.add_child(_settings())
 	menu.add_child(settings)
@@ -110,7 +129,7 @@ func show_title(best: float) -> void:
 		45
 	)
 	if best > 0:
-		_center_text(menu, "Best time: " + _format_time(best), 17, 295, QUIET_TEXT)
+		_center_text(menu, "Best time: " + _format_time(best), 17, 344, QUIET_TEXT)
 	start.grab_focus()
 
 
@@ -119,14 +138,25 @@ func show_pause() -> void:
 	column.add_theme_constant_override("separation", 10)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	_add_centered(column, "Paused", 28, true)
-	_add_centered(column, _chapter_title, 19)
+	_add_centered(
+		column, "Team paused · host chooses shared gear" if lan_session else _chapter_title, 19
+	)
 	var resume := _button("Keep exploring", true)
 	resume.pressed.connect(func() -> void: resume_requested.emit())
 	column.add_child(resume)
 	column.add_child(_equipment_menu())
 	var restart := _button("Restart all chapters", false)
 	restart.pressed.connect(func() -> void: restart_requested.emit())
-	column.add_child(restart)
+	restart.disabled = lan_session and not lan_host
+	var actions := HBoxContainer.new()
+	actions.alignment = BoxContainer.ALIGNMENT_CENTER
+	actions.add_theme_constant_override("separation", 20)
+	actions.add_child(restart)
+	if lan_session:
+		var leave := _button("Close LAN game" if lan_host else "Leave LAN game", false)
+		leave.pressed.connect(func() -> void: leave_requested.emit())
+		actions.add_child(leave)
+	column.add_child(actions)
 	column.add_child(_settings())
 	resume.grab_focus()
 	_reveal_equipped_items.call_deferred()
@@ -161,15 +191,20 @@ func update_equipment(equipment: ForestEquipment, dash_ready: bool) -> void:
 func show_stage_complete(
 	stage_title: String, next_title: String, time_text: String, gems: int, total: int
 ) -> void:
-	var column := _menu_column(Vector2(440, 322))
+	var column := _menu_column(Vector2(500, 400 if lan_session else 322))
 	_add_centered(column, "Level complete", 28, true)
 	_add_centered(column, stage_title, 21)
 	_add_centered(column, "Time: " + time_text, 19)
 	_add_centered(column, "Gems: %d of %d" % [gems, total], 19)
 	var next := _button("Continue to " + next_title, true)
 	next.pressed.connect(func() -> void: next_requested.emit())
+	next.disabled = lan_session and not lan_host
+	if next.disabled:
+		next.text = "Waiting for host to continue"
 	column.add_child(next)
-	next.grab_focus()
+	_add_session_exit(column)
+	if not next.disabled:
+		next.grab_focus()
 
 
 func show_win(
@@ -177,7 +212,7 @@ func show_win(
 ) -> void:
 	if secret_total <= 0:
 		secret_total = ForestChapters.TITLES.size()
-	var column := _menu_column(Vector2(490, 376))
+	var column := _menu_column(Vector2(550, 450 if lan_session else 376))
 	_add_centered(column, "Heart of Emberwood reached!", 28, true)
 	_add_centered(column, "Adventure complete", 21)
 	_add_centered(column, "Time: %s    Gems: %d of %d" % [time_text, gems, total], 19)
@@ -193,8 +228,13 @@ func show_win(
 	)
 	var replay := _button("Explore again", true)
 	replay.pressed.connect(func() -> void: restart_requested.emit())
+	replay.disabled = lan_session and not lan_host
+	if replay.disabled:
+		replay.text = "Waiting for host to restart"
 	column.add_child(replay)
-	replay.grab_focus()
+	_add_session_exit(column)
+	if not replay.disabled:
+		replay.grab_focus()
 
 
 func set_chapter(index: int, title: String, required_acorns: int = 3) -> void:
@@ -239,7 +279,9 @@ func update_boss(
 	_boss_hint.text = hint
 
 
-func toast(message: String) -> void:
+func toast(message: String, broadcast: bool = true) -> void:
+	if broadcast:
+		message_shown.emit(message)
 	if is_instance_valid(_toast_tween):
 		_toast_tween.kill()
 	_toast_label.text = message
@@ -470,7 +512,7 @@ func _sync_equipment_rows() -> void:
 		var detail: Label = _equipment_details[item.id]
 		var unlocked := _equipment != null and _equipment.is_unlocked(item.id)
 		var equipped := _equipment != null and _equipment.is_equipped(item.id)
-		toggle.disabled = not unlocked
+		toggle.disabled = not unlocked or (lan_session and not lan_host)
 		toggle.set_pressed_no_signal(equipped)
 		toggle.tooltip_text = item.description if unlocked else item.unlock_hint
 		var status: String = item.unlock_hint
@@ -580,3 +622,93 @@ func _health_marks(health: int) -> String:
 func _format_time(seconds: float) -> String:
 	var whole_seconds := int(seconds)
 	return "%02d:%02d" % [whole_seconds / 60, whole_seconds % 60]
+
+
+func show_lan() -> void:
+	var column := _menu_column(Vector2(800, 530), 0.82)
+	column.add_theme_constant_override("separation", 16)
+	_add_centered(column, "LAN co-op · 2–4 players", 28, true)
+	_add_centered(column, "Each player needs Emberwood on the same Wi-Fi or wired network.", 18)
+	_add_centered(column, "Share acorns, gear and campfires. A tumble returns the whole team.", 17)
+	var host_button := _button("Host a game", true)
+	host_button.pressed.connect(func() -> void: host_requested.emit())
+	column.add_child(host_button)
+	_add_centered(column, "Or enter the host's address", 18)
+	var address := LineEdit.new()
+	address.name = "HostAddress"
+	address.placeholder_text = "192.168.1.20"
+	address.max_length = 45
+	address.keep_editing_on_text_submit = true
+	address.custom_minimum_size = Vector2(400, 44)
+	address.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	address.add_theme_font_override("font", TEXT_FONT)
+	address.add_theme_font_size_override("font_size", 20)
+	address.add_theme_stylebox_override("focus", _focus_style())
+	address.text_submitted.connect(func(value: String) -> void: join_requested.emit(value))
+	column.add_child(address)
+	var join_button := _button("Join game", true)
+	join_button.pressed.connect(func() -> void: join_requested.emit(address.text))
+	column.add_child(join_button)
+	_lan_error = _label("", 17, GOLD)
+	_lan_error.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_lan_error.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_lan_error.custom_minimum_size.y = 44
+	column.add_child(_lan_error)
+	var back := _button("Back", false)
+	back.pressed.connect(func() -> void: show_title(_best))
+	column.add_child(back)
+	host_button.grab_focus()
+
+
+func lan_error(message: String) -> void:
+	if is_instance_valid(_lan_error):
+		_lan_error.text = message
+
+
+func show_lobby(
+	title: String, address: String, host_player: bool, count: int, numbers: Array = []
+) -> void:
+	lobby_visible = true
+	var column := _menu_column(Vector2(820, 440), 0.82)
+	_add_centered(column, title, 28, true)
+	var details := _label(address, 19, GOLD)
+	details.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(details)
+	_add_centered(column, "".join(_player_names(count, numbers)), 22)
+	_add_centered(column, "Host starts with 2–4 players. Everyone joins before the adventure.", 18)
+	_add_centered(
+		column, "Esc / P pauses the team. The host continues levels and chooses gear.", 17
+	)
+	var start := _button("Start co-op" if host_player else "Waiting for host", true)
+	start.disabled = not host_player or count < 2
+	start.pressed.connect(func() -> void: lan_start_requested.emit())
+	column.add_child(start)
+	var leave := _button("Cancel" if count == 0 else "Leave lobby", false)
+	leave.pressed.connect(func() -> void: leave_requested.emit())
+	column.add_child(leave)
+	if not start.disabled:
+		start.grab_focus()
+	else:
+		leave.grab_focus()
+
+
+func _player_names(count: int, numbers: Array) -> PackedStringArray:
+	var names := PackedStringArray()
+	if numbers.is_empty():
+		for index in count:
+			numbers.append(index + 1)
+	numbers.sort()
+	for number: int in numbers:
+		names.append("P%d%s     " % [number, " · Host" if number == 1 else ""])
+	return names
+
+
+func _add_session_exit(column: VBoxContainer) -> void:
+	if not lan_session:
+		return
+	var leave := _button("Close LAN game" if lan_host else "Leave LAN game", false)
+	leave.pressed.connect(func() -> void: leave_requested.emit())
+	column.add_child(leave)
+	if not lan_host:
+		leave.grab_focus()

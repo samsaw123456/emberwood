@@ -30,6 +30,26 @@ and snowy mountains.
 Each level has **3 required acorns** and a hidden firefly. There are **60 acorns,
 378 optional gems, and 20 hidden fireflies** across the complete adventure.
 
+## Play together on LAN
+
+Choose **LAN co-op · 2–4 players**. One computer chooses **Host a game**;
+the others enter the address shown by the host and choose **Join game**.
+Use the same Wi-Fi or wired network and the same game version on every computer.
+The host starts after 2–4 players have joined. Each person uses the usual controls
+and has their own camera and numbered fox.
+
+Acorns, gems, campfires, equipment, armor protection and guardian hearts belong
+to the team. A tumble or **R** returns everyone to the latest camp. Any player
+can pause/resume; the host selects shared gear, continues levels and restarts.
+Window focus loss pauses the team. Sound and Gentle motion affect only your
+computer. Co-op times do not replace your solo best time. Closing the host ends
+the session; other players can leave from the pause or results menu.
+
+All players must join the lobby before starting. No accounts or internet service
+are needed. If joining fails, check the address and that the host's firewall
+allows Emberwood on **UDP 24642**. Guest Wi-Fi may prevent computers from talking
+to each other. [Details and verification](docs/LAN.md).
+
 ## Regular monsters
 
 Fight **opossums, moss slimes, bramble beetles, and cave bats** throughout the
@@ -140,6 +160,8 @@ This is a Godot 4.5.1 project using GDScript and the compatibility renderer.
 No plugins or runtime network connection are required. The main scene is
 [scenes/main.tscn](scenes/main.tscn).
 
+- [scripts/lan.gd](scripts/lan.gd): lobby, bounded player input, host simulation
+  snapshots and connection recovery.
 - [scripts/game.gd](scripts/game.gd): chapter progression, game states, pickups,
   retries, encounter health, and campaign results.
 - [scripts/fox.gd](scripts/fox.gd): movement, double jumps, dash, and worn equipment.
@@ -175,6 +197,7 @@ ruff format --check tools/run_game_tests.py
 # Fox, platform, boss, arrows, game state, equipment, interactions, and routes.
 # Each suite uses temporary saved data and cleans it up afterward.
 python3 tools/run_game_tests.py
+python3 tools/lan_audit.py
 
 # Launch the playable game.
 ./emberwood

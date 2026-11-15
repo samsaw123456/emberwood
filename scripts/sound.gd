@@ -2,6 +2,8 @@ class_name ForestSound
 extends Node
 ## Short, softly enveloped synthesized cues; no downloaded audio required.
 
+signal cue_played(cue: String)
+
 var muted := false
 var clips: Dictionary = {}
 var players: Array[AudioStreamPlayer] = []
@@ -32,6 +34,7 @@ func _ready() -> void:
 
 
 func play(cue: String) -> void:
+	cue_played.emit(cue)
 	if muted or not clips.has(cue):
 		return
 	var voice := players[next_voice]

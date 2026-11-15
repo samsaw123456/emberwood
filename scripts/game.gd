@@ -5,6 +5,7 @@ enum State { TITLE, PLAYING, PAUSED, RESPAWNING, WON, CHAPTER_COMPLETE }
 
 const SAVE_PATH := "user://emberwood.cfg"
 const VIEW_WIDTH := 1152.0
+const PARTY_SPACING := 50.0
 const CHAPTER_TITLES := ForestChapters.TITLES
 
 var state := State.TITLE
@@ -27,7 +28,12 @@ var deaths := 0
 var best_time := 0.0
 var respawn_left := 0.0
 var invincible_left := 0.0
-var mushroom_cooldown := 0.0
+var mushroom_cooldown: float:
+	get:
+		return fox.mushroom_cooldown if is_instance_valid(fox) else 0.0
+	set(value):
+		if is_instance_valid(fox):
+			fox.mushroom_cooldown = value
 var gate_hint_cooldown := 0.0
 var camera_x := 0.0
 var particles: Array[Dictionary] = []
@@ -35,7 +41,14 @@ var reduced_motion := false
 var last_zone := ""
 var equipment := ForestEquipment.new()
 var arrows: Node2D
-var shot_cooldown := 0.0
+var shot_cooldown: float:
+	get:
+		return fox.weapon_cooldown if is_instance_valid(fox) else 0.0
+	set(value):
+		if is_instance_valid(fox):
+			fox.weapon_cooldown = value
+var lan: ForestLAN
+var party: Array[ForestFox] = []
 
 
 func _ready() -> void:
@@ -45,6 +58,7 @@ func _ready() -> void:
 	fox = ForestFox.new()
 	fox.z_index = 10
 	add_child(fox)
+	party.append(fox)
 	fox.jumped.connect(_on_jump)
 	fox.dashed.connect(func() -> void: sound.play("dash"))
 	fox.shot_requested.connect(_shoot)
@@ -55,6 +69,10 @@ func _ready() -> void:
 	add_child(sound)
 	hud = ForestHUD.new()
 	add_child(hud)
+	lan = ForestLAN.new()
+	lan.name = "LAN"
+	add_child(lan)
+	lan.setup(self)
 	hud.start_requested.connect(start_run)
 	hud.next_requested.connect(next_chapter)
 	hud.restart_requested.connect(start_run)
@@ -79,9 +97,10 @@ func _input(event: InputEvent) -> void:
 			resume_run()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("retry") and state == State.PLAYING:
-		_respawn("Back to your campfire")
+		if not lan.request_action("retry"):
+			_respawn("Back to your campfire")
 	elif event.is_action_pressed("mute"):
-		hud.toast("Sound off" if not sound.muted else "Sound on")
+		hud.toast("Sound off" if not sound.muted else "Sound on", false)
 		_toggle_sound(not sound.muted)
 
 
@@ -91,6 +110,8 @@ func _notification(what: int) -> void:
 
 
 func start_run() -> void:
+	if lan.is_guest():
+		return
 	chapter_results.clear()
 	equipment.reset()
 	elapsed = 0.0
@@ -124,6 +145,7 @@ func _load_chapter(index: int) -> void:
 		boss = ForestBoss.new()
 		boss.configure(index)
 		boss.fox = fox
+		boss.party = party
 		level.add_child(boss)
 		boss.player_hit.connect(_on_boss_hit)
 		boss.damaged.connect(_on_boss_damaged)
@@ -138,7 +160,7 @@ func _load_chapter(index: int) -> void:
 	mushroom_cooldown = 0.0
 	gate_hint_cooldown = 0.0
 	particles.clear()
-	fox.reset_at(level.camps[0])
+	_reset_party(level.camps[0])
 	_sync_equipment()
 	camera_x = 0.0
 	last_zone = ""
@@ -147,6 +169,8 @@ func _load_chapter(index: int) -> void:
 
 
 func next_chapter() -> void:
+	if lan.is_guest():
+		return
 	if state != State.CHAPTER_COMPLETE or stage_index >= CHAPTER_TITLES.size() - 1:
 		return
 	_load_chapter(stage_index + 1)
@@ -158,8 +182,9 @@ func next_chapter() -> void:
 
 func _complete_chapter() -> void:
 	_set_state(State.CHAPTER_COMPLETE)
-	fox.show_pose(&"victory")
-	fox.velocity = Vector2.ZERO
+	for member in party:
+		member.show_pose(&"victory")
+		member.velocity = Vector2.ZERO
 	chapter_results.append(
 		{"gems": level.taken_gems.size(), "total": level.gems.size(), "secret": level.secret_found}
 	)
@@ -174,6 +199,8 @@ func _complete_chapter() -> void:
 
 
 func pause_run() -> void:
+	if lan.request_action("pause"):
+		return
 	if state not in [State.PLAYING, State.RESPAWNING]:
 		return
 	state_before_pause = state
@@ -183,6 +210,8 @@ func pause_run() -> void:
 
 
 func resume_run() -> void:
+	if lan.request_action("resume"):
+		return
 	if state != State.PAUSED:
 		return
 	_set_state(state_before_pause)
@@ -191,17 +220,23 @@ func resume_run() -> void:
 
 func _set_state(next: State) -> void:
 	state = next
-	fox.active = state == State.PLAYING
-	level.set_active(state == State.PLAYING)
+	for member in party:
+		member.active = state == State.PLAYING
+		member.set_physics_process(not lan.is_guest())
+		member.sprite.speed_scale = 0.0 if state == State.PAUSED else 1.0
+		if state != State.PLAYING:
+			member.clear_network_input()
+	level.set_active(state == State.PLAYING and not lan.is_guest())
 	if is_instance_valid(boss):
-		boss.active = state == State.PLAYING
-	fox.sprite.speed_scale = 0.0 if state == State.PAUSED else 1.0
+		boss.active = state == State.PLAYING and not lan.is_guest()
 	backdrop.set_process(state != State.PAUSED)
 	for arrow in arrows.get_children():
-		arrow.active = state == State.PLAYING
+		arrow.active = state == State.PLAYING and not lan.is_guest()
 
 
 func _physics_process(delta: float) -> void:
+	if lan.is_guest():
+		return
 	if state == State.RESPAWNING:
 		respawn_left -= delta
 		if respawn_left <= 0:
@@ -210,27 +245,28 @@ func _physics_process(delta: float) -> void:
 		return
 	elapsed += delta
 	invincible_left = maxf(0, invincible_left - delta)
-	mushroom_cooldown = maxf(0, mushroom_cooldown - delta)
 	gate_hint_cooldown = maxf(0, gate_hint_cooldown - delta)
-	shot_cooldown = maxf(0, shot_cooldown - delta)
-	fox.modulate.a = 1.0
-	if invincible_left > 0:
-		fox.modulate.a = (
-			0.75 if reduced_motion else (0.65 if int(invincible_left * 10) % 2 else 1.0)
-		)
-	_check_hazards()
-	if state != State.PLAYING:
-		return
-	_check_pickups()
-	_check_platforms()
-	_update_boss_encounter()
-	_check_camps_and_gate()
+	for member in party:
+		member.modulate.a = 1.0
+		if invincible_left > 0:
+			member.modulate.a = (
+				0.75 if reduced_motion else (0.65 if int(invincible_left * 10) % 2 else 1.0)
+			)
+		_check_hazards(member)
+		if state != State.PLAYING:
+			return
+		_check_pickups(member)
+		_check_platforms(member)
+		_update_boss_encounter(member)
+		_check_camps_and_gate(member)
+		if state != State.PLAYING:
+			break
 	_refresh_hud()
 
 
 func _process(delta: float) -> void:
 	if state in [State.PLAYING, State.RESPAWNING, State.WON]:
-		var target := clampf(fox.position.x - 380, 0, level.world_width - VIEW_WIDTH)
+		var target := clampf(local_fox().position.x - 380, 0, level.world_width - VIEW_WIDTH)
 		camera_x = target if reduced_motion else lerpf(camera_x, target, 1.0 - exp(-8 * delta))
 	camera.position.x = roundf(camera_x) + VIEW_WIDTH / 2
 	backdrop.view_x = roundf(camera_x)
@@ -244,11 +280,12 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-func _check_hazards() -> void:
-	if fox.position.y > 730:
+func _check_hazards(member: ForestFox = null) -> void:
+	var actor := fox if member == null else member
+	if actor.position.y > 730:
 		_respawn("A little tumble. Try that jump again!")
 		return
-	var bounds := fox.body_bounds()
+	var bounds := actor.body_bounds()
 	for spike in level.spikes:
 		# Inset the rectangular artwork so brushing a triangle's corner is forgiving.
 		if invincible_left <= 0 and bounds.intersects(spike.grow(-3)):
@@ -262,9 +299,9 @@ func _check_hazards() -> void:
 		var pos := level.critter_position(critter)
 		var target := level.critter_bounds(critter)
 		if bounds.intersects(target):
-			if fox.velocity.y > 40 and fox.position.y < target.get_center().y:
+			if actor.velocity.y > 40 and actor.position.y < target.get_center().y:
 				critter.out = true
-				fox.bounce(-440)
+				actor.bounce(-440)
 				_burst(pos - Vector2(0, 20), Color("d7b2df"), 12)
 				sound.play("bounce")
 			elif invincible_left <= 0:
@@ -274,8 +311,9 @@ func _check_hazards() -> void:
 				return
 
 
-func _check_pickups() -> void:
-	var bounds := fox.body_bounds().grow(9)
+func _check_pickups(member: ForestFox = null) -> void:
+	var actor := fox if member == null else member
+	var bounds := actor.body_bounds().grow(9)
 	for index in level.gems.size():
 		if not level.taken_gems.has(index) and bounds.has_point(level.gems[index]):
 			level.taken_gems[index] = true
@@ -301,27 +339,29 @@ func _check_pickups() -> void:
 		hud.toast("A hidden firefly! You found the forest's little secret.")
 
 
-func _check_platforms() -> void:
-	if fox.is_on_floor():
-		for index in fox.get_slide_collision_count():
-			var collision := fox.get_slide_collision(index)
+func _check_platforms(member: ForestFox = null) -> void:
+	var actor := fox if member == null else member
+	if actor.is_on_floor():
+		for index in actor.get_slide_collision_count():
+			var collision := actor.get_slide_collision(index)
 			var body := collision.get_collider()
 			if body is ForestPlatform and collision.get_normal().y < -0.7:
 				body.step_on()
 	for mushroom in level.mushrooms:
-		if mushroom_cooldown <= 0 and fox.velocity.y >= 0:
-			if absf(fox.position.x - mushroom.x) < 32 and fox.position.y > mushroom.y - 28:
-				fox.bounce(-770)
-				mushroom_cooldown = 0.3
+		if actor.mushroom_cooldown <= 0 and actor.velocity.y >= 0:
+			if absf(actor.position.x - mushroom.x) < 32 and actor.position.y > mushroom.y - 28:
+				actor.bounce(-770)
+				actor.mushroom_cooldown = 0.3
 				_burst(mushroom - Vector2(0, 25), Color("f8b5d5"), 18)
 				sound.play("bounce")
 
 
-func _check_camps_and_gate() -> void:
+func _check_camps_and_gate(member: ForestFox = null) -> void:
+	var actor := fox if member == null else member
 	for index in level.camps.size():
-		if index > level.camp_index and fox.position.distance_to(level.camps[index]) < 50:
+		if index > level.camp_index and actor.position.distance_to(level.camps[index]) < 50:
 			_activate_camp(index)
-	if absf(fox.position.x - level.gate.x) < 42 and fox.position.y > 410:
+	if absf(actor.position.x - level.gate.x) < 42 and actor.position.y > 410:
 		if level.taken_acorns.size() == level.acorns.size() and level.gate_open:
 			if stage_index < CHAPTER_TITLES.size() - 1:
 				_complete_chapter()
@@ -347,7 +387,8 @@ func _respawn(message: String) -> void:
 	_set_state(State.RESPAWNING)
 	_clear_arrows()
 	respawn_left = 0.8
-	fox.show_pose(&"hurt")
+	for member in party:
+		member.show_pose(&"hurt")
 	_burst(fox.position - Vector2(0, 24), Color("f2b694"), 15)
 	sound.play("hurt")
 	hud.toast(message)
@@ -362,28 +403,31 @@ func _finish_respawn() -> void:
 			boss.reset_battle()
 			boss_started = false
 		level.gate_open = boss.defeated
-		if is_instance_valid(arena_wall):
-			arena_wall.queue_free()
-			arena_wall = null
-	fox.reset_at(level.camps[level.camp_index])
+		set_arena_wall(false)
+	_reset_party(level.camps[level.camp_index])
 	equipment.recharge()
 	_sync_equipment()
 	shot_cooldown = 0.0
 	invincible_left = 1.0
 	mushroom_cooldown = 0.0
-	camera_x = clampf(fox.position.x - 380, 0, level.world_width - VIEW_WIDTH)
+	camera_x = clampf(local_fox().position.x - 380, 0, level.world_width - VIEW_WIDTH)
 	_set_state(State.PLAYING)
 
 
 func _win() -> void:
 	_set_state(State.WON)
-	fox.show_pose(&"victory")
-	fox.velocity = Vector2.ZERO
-	if best_time <= 0 or elapsed < best_time:
+	for member in party:
+		member.show_pose(&"victory")
+		member.velocity = Vector2.ZERO
+	if not lan.connected and (best_time <= 0 or elapsed < best_time):
 		best_time = elapsed
 		_save_settings()
 	sound.play("win")
 	_burst(fox.position - Vector2(0, 60), Color("ffdda1"), 70)
+	show_campaign_results()
+
+
+func show_campaign_results() -> void:
 	var found := level.taken_gems.size()
 	var total := level.gems.size()
 	var all_secrets := level.secret_found
@@ -434,7 +478,8 @@ func _draw() -> void:
 
 
 func _refresh_hud() -> void:
-	var zone := level.zone_title(fox.position.x)
+	var actor := local_fox()
+	var zone := level.zone_title(actor.position.x)
 	last_zone = zone
 	hud.update_stats(
 		level.taken_acorns.size(),
@@ -442,9 +487,9 @@ func _refresh_hud() -> void:
 		level.gems.size(),
 		format_time(elapsed),
 		zone,
-		fox.jumps_left
+		actor.jumps_left
 	)
-	hud.update_equipment(equipment, fox.can_dash())
+	hud.update_equipment(equipment, local_fox().can_dash())
 
 
 func format_time(seconds: float) -> String:
@@ -464,7 +509,8 @@ func _toggle_motion(value: bool) -> void:
 	hud.reduced_motion = value
 	backdrop.reduced_motion = value
 	level.reduced_motion = value
-	fox.reduced_motion = value
+	for member in party:
+		member.reduced_motion = value
 	if is_instance_valid(boss):
 		boss.reduced_motion = value
 	if value:
@@ -528,21 +574,25 @@ func _save_settings(changed_setting: StringName = &"") -> void:
 		hud.toast("Couldn't save settings. You can still keep playing.")
 
 
-func _update_boss_encounter() -> void:
+func _update_boss_encounter(member: ForestFox = null) -> void:
+	var actor := fox if member == null else member
 	if not is_instance_valid(boss):
 		return
 	if (
 		not boss_started
 		and not boss.defeated
-		and fox.position.x >= boss.arena_min + 30
+		and actor.position.x >= boss.arena_min + 30
 		and level.taken_acorns.size() == level.required_acorns
 	):
 		boss_started = true
 		player_health = 3
 		_activate_camp(level.camps.size() - 1)
-		arena_wall = ForestPlatform.new()
-		arena_wall.setup(Rect2(boss.arena_min - 100, 250, 18, 286), "wall")
-		level.add_child(arena_wall)
+		set_arena_wall(true)
+		for friend in party:
+			if friend.position.x < boss.arena_min:
+				friend.reset_at(
+					Vector2(boss.arena_min + 40 + party.find(friend) * PARTY_SPACING, 536)
+				)
 		boss.begin()
 		sound.play("camp")
 		hud.toast("%s: dodge the landing mark, then attack the gold cap." % boss.guardian_name)
@@ -579,9 +629,7 @@ func _on_boss_damaged(_remaining: int) -> void:
 
 func _on_boss_defeated() -> void:
 	level.gate_open = true
-	if is_instance_valid(arena_wall):
-		arena_wall.queue_free()
-		arena_wall = null
+	set_arena_wall(false)
 	sound.play("win")
 	hud.toast("%s yields the path. The gate is just ahead." % boss.guardian_name)
 	hud.update_boss(false, 0, player_health, "")
@@ -612,19 +660,22 @@ func _activate_camp(index: int) -> void:
 
 
 func _toggle_equipment(item_id: StringName, enabled: bool) -> void:
+	if lan.is_guest():
+		return
 	if state != State.PAUSED or not equipment.set_equipped(item_id, enabled):
 		return
 	_sync_equipment()
 
 
 func _sync_equipment() -> void:
-	fox.bow_equipped = equipment.is_equipped(&"bow")
-	fox.armor_equipped = equipment.active_armor() != &""
-	fox.weapon_id = equipment.active_weapon()
-	fox.armor_id = equipment.active_armor()
-	fox.armor_charged = equipment.armor_charge > 0
-	fox.queue_redraw()
-	hud.update_equipment(equipment, fox.can_dash())
+	for member in party:
+		member.bow_equipped = equipment.is_equipped(&"bow")
+		member.armor_equipped = equipment.active_armor() != &""
+		member.weapon_id = equipment.active_weapon()
+		member.armor_id = equipment.active_armor()
+		member.armor_charged = equipment.armor_charge > 0
+		member.queue_redraw()
+	hud.update_equipment(equipment, local_fox().can_dash())
 
 
 func _absorb_hit() -> bool:
@@ -639,16 +690,19 @@ func _absorb_hit() -> bool:
 	return true
 
 
-func _shoot() -> void:
+func _shoot(member: ForestFox = null) -> void:
+	var actor := fox if member == null else member
 	var weapon := equipment.active_weapon()
-	if state != State.PLAYING or weapon == &"" or shot_cooldown > 0:
+	if state != State.PLAYING or weapon == &"" or actor.weapon_cooldown > 0:
 		return
 	var stats := ForestEquipment.definition(weapon)
-	shot_cooldown = float(stats.cooldown)
+	actor.weapon_cooldown = float(stats.cooldown)
 	for angle: float in stats.get("angles", [0.0]):
 		var arrow := ForestArrow.new()
-		# Each shot starts inside the fox so a thin wall cannot be skipped.
-		arrow.setup(fox.position + Vector2(0, -20), fox.facing, level, boss, fox, weapon, angle)
+		# Each shot starts inside the actor so a thin wall cannot be skipped.
+		arrow.setup(
+			actor.position + Vector2(0, -20), actor.facing, level, boss, actor, weapon, angle
+		)
 		arrow.struck.connect(_on_arrow_struck)
 		arrows.add_child(arrow)
 	sound.play("shoot" if weapon == &"bow" else String(weapon))
@@ -664,3 +718,53 @@ func _clear_arrows() -> void:
 	for arrow in arrows.get_children():
 		arrows.remove_child(arrow)
 		arrow.queue_free()
+
+
+func local_fox() -> ForestFox:
+	return lan.local_fox() if is_instance_valid(lan) else fox
+
+
+func _reset_party(at: Vector2) -> void:
+	for index in party.size():
+		party[index].reset_at(at + Vector2(index * PARTY_SPACING, 0))
+
+
+func add_party_member() -> ForestFox:
+	var member := ForestFox.new()
+	member.z_index = 10
+	member.network_controlled = true
+	member.reduced_motion = reduced_motion
+	add_child(member)
+	party.append(member)
+	member.jumped.connect(
+		func(double: bool) -> void:
+			sound.play("double" if double else "jump")
+			_burst(member.position, Color("bdd7c3"), 7 if double else 4)
+	)
+	member.dashed.connect(func() -> void: sound.play("dash"))
+	member.shot_requested.connect(_shoot.bind(member))
+	member.reset_at(level.camps[level.camp_index] + Vector2((party.size() - 1) * PARTY_SPACING, 0))
+	return member
+
+
+func return_to_title(message: String = "") -> void:
+	_set_state(State.TITLE)
+	chapter_results.clear()
+	equipment.reset()
+	elapsed = 0.0
+	deaths = 0
+	_load_chapter(0)
+	_refresh_hud()
+	hud.show_title(best_time)
+	if not message.is_empty():
+		hud.toast(message)
+
+
+func set_arena_wall(present: bool) -> void:
+	if present and is_instance_valid(boss) and not is_instance_valid(arena_wall):
+		arena_wall = ForestPlatform.new()
+		arena_wall.setup(Rect2(boss.arena_min - 100, 250, 18, 286), "wall")
+		level.add_child(arena_wall)
+	elif not present and is_instance_valid(arena_wall):
+		arena_wall.queue_free()
+		arena_wall = null
