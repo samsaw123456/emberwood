@@ -2,6 +2,8 @@
 
 Emberwood now has **20 levels, 6 animal bosses, 5 weapons, and 8 armor sets**.
 Ordinary enemies include opossums, hopping slimes, beetles and bats.
+Dash open treasure chests for a leaf shield, and find a hidden firefly to gain a
+gem-collecting friend. See [forest discoveries](docs/DISCOVERIES.md).
 Meet a boss every third level: [guardian roster](docs/BOSSES.md).
 
 # START HERE: COPY THIS PROMPT

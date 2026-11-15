@@ -23,6 +23,7 @@ SUITES = (
     "journey",
     "interactions",
     "monsters",
+    "finds",
     "settings_migration",
     "route",
     "trails",

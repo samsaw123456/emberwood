@@ -1,5 +1,7 @@
 # Emberwood playtest notes
 
+Current optional discoveries and verification: [treasure and companion](DISCOVERIES.md).
+
 The adventure has twenty levels, from Emberwood through the riverlands and
 snowy mountains to the ancient forest. There are 60 required acorns, 378 optional
 gems, twenty hidden fireflies, and Old Croak. The latest
