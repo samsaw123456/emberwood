@@ -1,6 +1,8 @@
 #!/bin/sh
 # Emberwood — launch the current game from this project.
 # In Zed: open this project, then choose the "Play Emberwood" task.
+# Also available offline in the Applications menu with its fox-and-forest icon.
+# Install that shortcut with: python3 tools/install_app.py
 # Current adventure: 20 levels, 3 weapons, and 8 armor sets.
 # New trails cross riverlands, frostpine mountains, and the ancient forest.
 # Playtest results and screenshots: docs/TWENTY_LEVELS.md

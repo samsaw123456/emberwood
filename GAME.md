@@ -32,6 +32,15 @@ Each level has **3 required acorns** and a hidden firefly. There are **60 acorns
 
 ## Play
 
+On this computer, open **Applications** and search for **Emberwood**. Its icon
+shows the fox in a forest. This shortcut launches the game in `~/git/aie` and
+works offline, using the installed Godot runtime and local artwork. Keep that
+project folder and runtime installed. Zed and a browser do not need to be open.
+
+To install the same Linux menu shortcut from another checkout, run
+`python3 tools/install_app.py` after setting up Godot as described below.
+The installer uses the current checkout and installs only for the current user.
+
 Open [project.godot](project.godot) in **Godot 4.5.1**, wait for the artwork to
 import, then press **Play** at the top right or **F5**. Choose **Start adventure**.
 The executable [emberwood](emberwood) launches the current game. In Zed, open
@@ -181,3 +190,7 @@ artwork files are preserved. See [artwork credits](assets/CREDITS.md), the
 DejaVu Sans regular and bold are bundled under their
 [font redistribution license](assets/fonts/LICENSE.txt). Additional scenery,
 pixel title, interface elements, acorns, and sound effects are created in code.
+The app icon combines the SunnyLand fox and trees with a forest clearing;
+its original sprite credits remain above. `tools/build_app_icon.py` regenerates
+the bundled icon sizes using Pillow; playing or installing the game does not
+require Pillow.
