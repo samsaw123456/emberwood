@@ -33,6 +33,12 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	if chapter_index == 3:
+		_draw_caverns()
+		return
+	if chapter_index == 4:
+		_draw_ridge()
+		return
 	if chapter_index == 1:
 		_draw_mill_valley()
 		return
@@ -268,3 +274,144 @@ func _draw_high_branches() -> void:
 				5
 			)
 	_draw_fireflies()
+
+
+func _draw_caverns() -> void:
+	# Roots and weathered stone continue the forest beneath its floor.
+	draw_rect(Rect2(Vector2.ZERO, VIEW_SIZE), Color("30473f"))
+	for layer in 2:
+		var spacing := 340.0 + layer * 110.0
+		var offset := fposmod(view_x * (0.08 + layer * 0.10), spacing)
+		var stone: Color = [Color("40554a"), Color("526254")][layer]
+		for index in range(-1, 5):
+			var x := index * spacing - offset
+			var shoulder := 225.0 + sin(index * 3.7) * 65
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						Vector2(x, 648),
+						Vector2(x + 15, shoulder + 150),
+						Vector2(x + 70, shoulder),
+						Vector2(x + 165, shoulder - 35),
+						Vector2(x + 245, shoulder + 70),
+						Vector2(x + 310, 648)
+					]
+				),
+				stone
+			)
+			draw_polyline(
+				PackedVector2Array(
+					[
+						Vector2(x + 70, shoulder),
+						Vector2(x + 120, shoulder + 100),
+						Vector2(x + 90, shoulder + 240)
+					]
+				),
+				Color("344a40"),
+				5
+			)
+	# Small breaks in the roof admit daylight without brightening the whole cavern.
+	var opening_x := 705.0 - fposmod(view_x * 0.14, 1500)
+	for offset in [0.0, 1500.0]:
+		var x: float = opening_x + offset
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					Vector2(x, 0),
+					Vector2(x + 86, 0),
+					Vector2(x + 122, 250),
+					Vector2(x + 50, 315),
+					Vector2(x - 38, 230)
+				]
+			),
+			Color("73856b")
+		)
+		draw_line(Vector2(x + 40, 0), Vector2(x + 25, 110), Color("c0c191"), 14)
+	var drift := fposmod(view_x * 0.32, 290)
+	for index in range(-1, 6):
+		var x := index * 290.0 - drift
+		var tip := 100.0 + sin(index * 4.1) * 27
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					Vector2(x - 15, 0),
+					Vector2(x + 305, 0),
+					Vector2(x + 300, 75),
+					Vector2(x + 225, 95),
+					Vector2(x + 192, tip + 45),
+					Vector2(x + 155, 95),
+					Vector2(x + 70, 130),
+					Vector2(x + 28, 77)
+				]
+			),
+			Color("263e36")
+		)
+		var root := PackedVector2Array(
+			[Vector2(x + 66, 20), Vector2(x + 92, 105), Vector2(x + 75, 160), Vector2(x + 115, 225)]
+		)
+		draw_polyline(root, Color("7c7755"), 7)
+		draw_line(Vector2(x + 80, 150), Vector2(x + 42, 180), Color("7c7755"), 3)
+		draw_line(Vector2(x + 110, 214), Vector2(x + 137, 199), Color("7c7755"), 3)
+		for moss in 4:
+			draw_rect(
+				Rect2(x + 145 + moss * 13, 83 + moss % 2 * 8, 9, 18 + moss * 3), Color("72815b")
+			)
+
+
+func _draw_ridge() -> void:
+	# Warm exposed rock and distant blue-grey ridgelines replace the tree ceiling.
+	draw_rect(Rect2(Vector2.ZERO, VIEW_SIZE), Color("dfcfaa"))
+	for cloud in 4:
+		var x := cloud * 340.0 - fposmod(view_x * 0.06, 340) - 70
+		var y := 145.0 + cloud % 2 * 45
+		draw_rect(Rect2(x, y, 150, 12), Color("f0e5c8"))
+		draw_rect(Rect2(x + 35, y - 12, 83, 12), Color("f0e5c8"))
+	for layer in 3:
+		var spacing := 460.0
+		var drift := fposmod(view_x * (0.035 + layer * 0.045), spacing)
+		var shade: Color = [Color("a7b4a7"), Color("8b9a8e"), Color("707e70")][layer]
+		for index in range(-1, 4):
+			var x := index * spacing - drift
+			var peak := 235.0 + layer * 80 + sin(index * 2.7 + layer) * 45
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						Vector2(x - 40, 648),
+						Vector2(x + 45, peak + 90),
+						Vector2(x + 160, peak),
+						Vector2(x + 225, peak + 60),
+						Vector2(x + 280, peak + 50),
+						Vector2(x + 500, 648)
+					]
+				),
+				shade
+			)
+			if layer == 0:
+				draw_colored_polygon(
+					PackedVector2Array(
+						[
+							Vector2(x + 120, peak + 32),
+							Vector2(x + 160, peak),
+							Vector2(x + 205, peak + 42),
+							Vector2(x + 162, peak + 27)
+						]
+					),
+					Color("dedcc1")
+				)
+	var offset := fposmod(view_x * 0.30, 510)
+	for index in range(-1, 4):
+		var x := index * 510.0 - offset
+		draw_texture_rect(PINE, Rect2(x + 35, 312, 142, 246), false, Color("8c9875"))
+		draw_colored_polygon(
+			PackedVector2Array(
+				[
+					Vector2(x + 190, 648),
+					Vector2(x + 220, 500),
+					Vector2(x + 280, 465),
+					Vector2(x + 370, 510),
+					Vector2(x + 440, 648)
+				]
+			),
+			Color("8d8970")
+		)
+		draw_line(Vector2(x + 280, 470), Vector2(x + 290, 565), Color("716f5d"), 4)

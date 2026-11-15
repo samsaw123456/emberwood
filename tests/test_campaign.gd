@@ -12,41 +12,65 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	await _key(KEY_ENTER)
-	for chapter in 3:
-		var path: Array = FOREST_ROUTE if chapter == 0 else ForestChapters.route(chapter)
-		print("CHAPTER ", chapter + 1, ": ", game.level.title)
-		if not await _follow_route(path):
+	for chapter in ForestChapters.TITLES.size():
+		if not await _play_chapter(chapter):
 			return
-		_release()
-		if chapter < 2:
-			if game.state != game.State.CHAPTER_COMPLETE:
-				_fail("The chapter gate did not show a result.")
-				return
-			await process_frame
-			await process_frame
-			await _key(KEY_ENTER)
-			if game.stage_index != chapter + 1:
-				_fail("Continue did not advance to the next chapter.")
-				return
-	if not await _fight_boss():
-		return
-	if not await _walk_to(game.level.gate.x):
-		_fail("The defeated boss did not leave a reachable gate.")
-		return
 	_release()
 	await _step(3)
-	if game.state != game.State.WON or game.chapter_results.size() != 2:
+	if (
+		game.state != game.State.WON
+		or game.chapter_results.size() != ForestChapters.TITLES.size() - 1
+	):
 		_fail("Campaign completion was not reached.")
 		return
 	print(
-		"PASS: full three-chapter campaign and Old Croak, inputs only. Time ",
+		"PASS: full five-chapter campaign and Old Croak, inputs only. Time ",
 		game.format_time(game.elapsed),
 		"; retries ",
 		game.deaths,
-		"; hearts ",
-		game.player_health
+		"; earned gear ",
+		game.equipment.unlocked.size()
 	)
 	quit(0)
+
+
+func _play_chapter(chapter: int) -> bool:
+	var path: Array = FOREST_ROUTE if chapter == 0 else ForestChapters.route(chapter)
+	print("CHAPTER ", chapter + 1, ": ", game.level.title)
+	if not await _follow_route(path):
+		return false
+	_release()
+	if ForestChapters.has_boss(chapter) and not await _finish_boss_chapter():
+		return false
+	if game.level.taken_acorns.size() != 3 or not game.level.secret_found:
+		_fail("Chapter %d missed an acorn or hidden firefly." % (chapter + 1))
+		return false
+	if chapter < ForestChapters.TITLES.size() - 1:
+		return await _continue_chapter(chapter)
+	return true
+
+
+func _continue_chapter(chapter: int) -> bool:
+	if game.state != game.State.CHAPTER_COMPLETE:
+		_fail("The chapter gate did not show a result.")
+		return false
+	await process_frame
+	await process_frame
+	await _key(KEY_ENTER)
+	if game.stage_index != chapter + 1:
+		_fail("Continue did not advance to the next chapter.")
+		return false
+	return true
+
+
+func _finish_boss_chapter() -> bool:
+	if not await _fight_boss():
+		return false
+	if not await _walk_to(game.level.gate.x):
+		_fail("The defeated boss did not leave a reachable gate.")
+		return false
+	_release()
+	return true
 
 
 func _fight_boss() -> bool:

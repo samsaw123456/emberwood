@@ -295,17 +295,23 @@ func _test_boss_armor() -> void:
 	await _step(2)
 	_check(game.boss_started, "Reaching the prepared clearing starts the boss.")
 	_check(
-		game.equipment.is_equipped(&"bow") and game.equipment.is_equipped(&"armor"),
-		"The boss checkpoint catches up missed equipment rewards."
+		game.equipment.is_equipped(&"spear") and game.equipment.is_equipped(&"bark_armor"),
+		"The boss checkpoint catches up missed spear and bark armor rewards."
 	)
 	game.invincible_left = 0.0
 	game.boss.player_hit.emit()
 	_check(
-		game.player_health == 3 and game.equipment.armor_charge == 0,
+		game.player_health == 3 and game.equipment.armor_charge == 1,
 		"Armor absorbs a boss hit without losing a heart."
 	)
 	game.boss.player_hit.emit()
 	_check(game.player_health == 3, "Immediate repeated boss contact respects armor immunity.")
+	game.invincible_left = 0.0
+	game.boss.player_hit.emit()
+	_check(
+		game.player_health == 3 and game.equipment.armor_charge == 0,
+		"Bark armor absorbs a second separated boss hit."
+	)
 	game.invincible_left = 0.0
 	game.boss.player_hit.emit()
 	_check(game.player_health == 2, "Spent armor allows the next boss hit to cost a heart.")
@@ -318,6 +324,7 @@ func _test_equipment_progression() -> void:
 	var bow := _find_button(game.hud, "Bow") as CheckButton
 	var armor := _find_button(game.hud, "Leaf armor") as CheckButton
 	if bow != null and armor != null:
+		bow.button_pressed = true
 		bow.button_pressed = false
 		armor.button_pressed = true
 	_check(

@@ -33,14 +33,20 @@ specific action hint. Toasts have a bounded width and can wrap.
 
 Pause, level completion, and victory are small menus over the current scene.
 Each has a direct action, and pause includes sound and gentle-motion settings.
-Pause also contains two equipment rows with direct toggles, descriptions, and
-checkpoint hints for locked rewards. The play HUD reports dash readiness and
-bow/armor status in a single line. Bow and leaf armor are drawn on the fox in
-the same small pixel scale; unused reward campfires display the corresponding
-item. Equipment introduces no separate inventory grid or decorative screen.
+Pause contains two columns, Weapons and Armor, with three direct choices each.
+Descriptions explain behavior and locked choices name their reward checkpoint.
+The play HUD reports dash readiness, the selected weapon, and armor blocks left
+in a single line. Each weapon and armor set has a distinct small silhouette on
+the fox; unused reward campfires display the corresponding item. Equipment
+introduces no separate inventory screen.
 The title's controls sit over the ground at the bottom of the screen so they do not
 collide with the tutorial signs in the opening level. No decorative page, marketing
 panel, route diagram, or slogan is needed to explain the game.
+
+Moss Caverns uses layered rock faces, roots, and muted green stone. Sunlit Ridge
+opens into warm sky, angular granite, and distant pines. These landmarks support
+the new routes. Solid platform silhouettes and hazard contrast stay readable;
+the cave does not depend on glowing effects to establish its identity.
 
 ## Verification
 

@@ -30,6 +30,14 @@ var reduced_motion := false:
 	set(value):
 		reduced_motion = value
 		queue_redraw()
+var weapon_id: StringName = &"":
+	set(value):
+		weapon_id = value
+		_redraw_gear()
+var armor_id: StringName = &"":
+	set(value):
+		armor_id = value
+		_redraw_gear()
 var bow_equipped := false:
 	set(value):
 		bow_equipped = value
@@ -209,31 +217,77 @@ func _redraw_gear() -> void:
 func _draw_gear() -> void:
 	_gear_art.draw_set_transform(Vector2.ZERO, 0.0, Vector2(facing, 1))
 	if armor_equipped:
-		var leaf := Color("90aa70") if armor_charged else Color("647768")
-		_gear_art.draw_rect(Rect2(-7, -22, 16, 15), Color("354e44"))
-		_gear_art.draw_rect(Rect2(-5, -22, 12, 12), leaf)
-		_gear_art.draw_rect(Rect2(-1, -21, 2, 13), Color("c3b171"))
-		_gear_art.draw_line(Vector2(-5, -18), Vector2(5, -14), Color("526b48"), 2)
-		_gear_art.draw_rect(Rect2(-5, -10, 12, 3), Color("a5784e"))
-	if bow_equipped:
+		_draw_armor()
+	var weapon := weapon_id if not weapon_id.is_empty() else (&"bow" if bow_equipped else &"")
+	if not weapon.is_empty():
 		_gear_art.draw_rect(Rect2(7, -21, 14, 5), Color("b96841"))
 		_gear_art.draw_rect(Rect2(10, -21, 11, 3), Color("e5ad73"))
-		_gear_art.draw_polyline(
-			PackedVector2Array(
-				[
-					Vector2(15, -34),
-					Vector2(21, -29),
-					Vector2(24, -21),
-					Vector2(21, -13),
-					Vector2(15, -8)
-				]
-			),
-			Color("cb975b"),
-			3
-		)
-		_gear_art.draw_line(Vector2(15, -33), Vector2(15, -9), Color("f0ddad"), 1)
-		_gear_art.draw_rect(Rect2(19, -24, 5, 6), Color("795239"))
+	match weapon:
+		&"bow":
+			_draw_bow()
+		&"spear":
+			_gear_art.draw_line(Vector2(-13, -19), Vector2(32, -19), Color("9b683d"), 3)
+			_gear_art.draw_line(Vector2(-13, -20), Vector2(30, -20), Color("d2ad70"), 1)
+			_gear_art.draw_colored_polygon(
+				PackedVector2Array([Vector2(29, -24), Vector2(42, -19), Vector2(29, -14)]),
+				Color("c9d4c7")
+			)
+			_gear_art.draw_rect(Rect2(26, -22, 4, 6), Color("5c7068"))
+		&"seed_bomb":
+			_gear_art.draw_rect(Rect2(-15, -19, 9, 14), Color("795b39"))
+			_gear_art.draw_rect(Rect2(-14, -18, 7, 3), Color("c29a55"))
+			_gear_art.draw_circle(Vector2(22, -21), 8, Color("547344"))
+			_gear_art.draw_rect(Rect2(17, -27, 7, 11), Color("a5b56a"))
+			_gear_art.draw_line(Vector2(22, -28), Vector2(25, -33), Color("b6c98b"), 2)
+			_gear_art.draw_line(Vector2(24, -31), Vector2(29, -32), Color("7e9b56"), 3)
 	_gear_art.draw_set_transform(Vector2.ZERO)
+
+
+func _draw_armor() -> void:
+	var armor := armor_id if not armor_id.is_empty() else &"armor"
+	var base := Color("90aa70")
+	var edge := Color("354e44")
+	if armor == &"bark_armor":
+		base = Color("b38a57")
+		edge = Color("63472e")
+	elif armor == &"ironwood_armor":
+		base = Color("83948c")
+		edge = Color("3a514e")
+	if not armor_charged:
+		base = base.darkened(0.35)
+	_gear_art.draw_rect(Rect2(-7, -22, 16, 15), edge)
+	_gear_art.draw_rect(Rect2(-5, -22, 12, 12), base)
+	if armor == &"armor":
+		_gear_art.draw_rect(Rect2(-1, -21, 2, 13), Color("c3b171"))
+		_gear_art.draw_line(Vector2(-5, -18), Vector2(5, -14), Color("526b48"), 2)
+	else:
+		for x in [-3, 3]:
+			_gear_art.draw_line(Vector2(x, -21), Vector2(x - 1, -10), edge, 2)
+		_gear_art.draw_rect(Rect2(-9, -23, 7, 5), base.lightened(0.12))
+		_gear_art.draw_rect(Rect2(5, -23, 7, 5), base.lightened(0.12))
+		if armor == &"ironwood_armor":
+			for x in [-5, 5]:
+				_gear_art.draw_rect(Rect2(x, -19, 2, 2), Color("d5d4a8"))
+			_gear_art.draw_rect(Rect2(-6, -11, 14, 4), Color("b8c1ab"))
+	_gear_art.draw_rect(Rect2(-5, -8, 12, 3), Color("a5784e"))
+
+
+func _draw_bow() -> void:
+	_gear_art.draw_polyline(
+		PackedVector2Array(
+			[
+				Vector2(15, -34),
+				Vector2(21, -29),
+				Vector2(24, -21),
+				Vector2(21, -13),
+				Vector2(15, -8)
+			]
+		),
+		Color("cb975b"),
+		3
+	)
+	_gear_art.draw_line(Vector2(15, -33), Vector2(15, -9), Color("f0ddad"), 1)
+	_gear_art.draw_rect(Rect2(19, -24, 5, 6), Color("795239"))
 
 
 func _draw() -> void:

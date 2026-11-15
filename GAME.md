@@ -1,23 +1,28 @@
 # Emberwood — Forest Adventure
 
-Guide the fox through three chapters, collect the acorns that open each trail,
-and get past Old Croak at the hollow tree.
+Guide the fox through five chapters, collect the acorns that open each trail,
+get past Old Croak, and reach the summit beyond the caves.
 
 | Chapter | Route |
 | --- | --- |
 | **1. Emberwood** | The original forest: spikes, critters, moving platforms, crumbling bridges, and a bouncing mushroom. |
 | **2. Flooded Mill** | Cross the millpond using timber beams and the rising sluice lift. |
 | **3. High Canopy** | Follow the branches above the forest, then face Old Croak in his clearing. |
+| **4. Moss Caverns** | Explore rooted stone passages, cross shifting platforms, and find seed bombs. |
+| **5. Sunlit Ridge** | Climb the rocky pine trail, earn ironwood armor, and reach the summit. |
 
-Each chapter has **3 required acorns** and a hidden firefly. There are **9 acorns,
-72 optional gems, and 3 hidden fireflies** across the complete adventure.
+Each chapter has **3 required acorns** and a hidden firefly. There are **15 acorns,
+108 optional gems, and 5 hidden fireflies** across the complete adventure.
 
 ## Play
 
 Open [project.godot](project.godot) in **Godot 4.5.1**, wait for the artwork to
 import, then press **Play** at the top right or **F5**. Choose **Start adventure**.
-On this computer, [start-game.sh](start-game.sh) also launches the game using the
-installed Godot runtime.
+The executable [emberwood](emberwood) launches the current game. In Zed, open
+this project, open the command palette, choose **task: spawn**, then **Play
+Emberwood**. The [project task](.zed/tasks.json) runs that same launcher, following
+[Zed's task format](https://zed.dev/docs/tasks). It stays connected to the current
+project whenever the game is updated.
 
 | Action | Keys |
 | --- | --- |
@@ -26,7 +31,7 @@ installed Godot runtime.
 | Double jump | Release jump, then press it again in the air |
 | Jump higher | Hold jump a little longer |
 | Dash | **Shift**, in the direction you face |
-| Shoot the equipped bow | **J** |
+| Use the selected weapon | **J** |
 | Retry from your campfire | **R** |
 | Pause, choose equipment, or resume | **Esc** or **P** |
 | Sound on or off | **M** |
@@ -40,20 +45,27 @@ Dash is available from the start. It gives a short horizontal burst, then needs
 a brief cooldown. You get one dash in the air before landing again. Jumping can
 interrupt a dash; walls and hazards still matter.
 
-At **Emberwood's second campfire** (the first checkpoint after the starting camp),
-you earn a **bow**. Press **J** to fire an arrow in the direction the fox faces.
-Arrows knock critters aside and stop at platforms and walls. Ammunition is
-unlimited, with a short delay between shots; release and press J for each shot.
+Press **J** to use your selected weapon in the direction the fox faces. Each
+press uses it once; ammunition is unlimited, with a short delay between uses.
 
-At **Emberwood's third campfire**, you earn **leaf armor**. It absorbs one hit from
-spikes, critters, or Old Croak. A newly reached campfire or a retry repairs it;
-returning to an already lit camp or toggling equipment does not. Armor cannot
-save you from a fall. The HUD shows whether it is ready or spent.
+| Reward | Where to earn it | What it does |
+| --- | --- | --- |
+| **Bow** | Emberwood, second campfire | Fires quick, straight arrows. |
+| **Leaf armor** | Emberwood, third campfire | Blocks one hit. |
+| **Throwing spear** | Flooded Mill, second campfire | Pierces two critters in a line. |
+| **Bark armor** | High Canopy, second campfire | Blocks two hits. |
+| **Seed bombs** | Moss Caverns, second campfire | Lobs a seed that bursts on impact or after a short fuse, hitting nearby enemies. |
+| **Ironwood armor** | Sunlit Ridge, second campfire | Blocks three hits. |
 
-Rewards equip automatically. Open **Esc → Equipment** to equip or remove the bow
-and armor independently; you can use both together. Equipment and choices carry
-across retries and levels. A later checkpoint also awards earlier rewards you
-missed. Restarting the adventure clears equipment along with the level progress.
+Weapons stop at solid terrain; seed bursts cannot hit through walls. Armor blocks
+spikes, critters, or Old Croak, but cannot save you from a fall. A newly reached
+campfire or a retry repairs it. Revisiting an old camp or swapping armor does not
+erase damage already absorbed. The HUD shows the remaining blocks.
+
+Rewards equip automatically. Open **Esc** to choose **one weapon and one armor**;
+you can turn either off. Gear and choices carry across retries and levels.
+A later checkpoint also awards earlier rewards you missed. Restarting the whole
+adventure clears equipment along with level progress.
 
 Old Croak marks where he will land before he leaps. Avoid the landing spot and
 jump over the ripples. When he rests and his cap turns gold, double-jump onto it.
@@ -61,7 +73,8 @@ You can also **shoot him while he rests**. **Three hits**, one per opening, let
 you pass. The fox has **three hearts** during this encounter. Losing them before
 victory returns you to the nearby campfire and resets the fight, including Old
 Croak's health. Once defeated, he stays defeated through retries and falls, and
-the final gate stays open. Your collected acorns and gems remain collected.
+the canopy gate stays open. Continue through it to Moss Caverns. Your collected
+acorns and gems remain collected.
 
 Choose **Restart all chapters** in the pause menu to begin again from the forest.
 **Gentle motion** in the title or pause menu reduces decorative movement and
@@ -69,8 +82,8 @@ particles. The game pauses when its window loses focus and waits for you to resu
 
 The complete campaign's best time and the sound/motion settings are saved locally.
 The current chapter, campfire, and collected items reset when you close the game.
-The expanded campaign uses its own best-time record; an old single-forest time
-is not compared with the longer adventure.
+The five-chapter campaign uses its own best-time record; earlier one- and
+three-chapter records are preserved separately.
 
 ## For developers
 
@@ -84,7 +97,8 @@ No plugins or runtime network connection are required. The main scene is
 - [scripts/equipment.gd](scripts/equipment.gd): reward definitions, unlocks,
   equipment choices, and armor charge. Checkpoint names and menu descriptions
   come from this shared catalog.
-- [scripts/arrow.gd](scripts/arrow.gd): arrow flight, range, and swept hit detection.
+- [scripts/arrow.gd](scripts/arrow.gd): arrows, piercing spears, arcing seed bombs,
+  swept hit detection, and wall-aware bursts.
 - [scripts/level.gd](scripts/level.gd): terrain, hazards, pickups, and world labels.
 - [scripts/chapters.gd](scripts/chapters.gd): new chapter layouts and test routes.
 - [scripts/platform.gd](scripts/platform.gd): solid, moving, and crumbling terrain.
@@ -99,7 +113,7 @@ arguments to Godot. Run these commands from the project directory:
 
 ```sh
 # Import artwork and verify project loading, including after a fresh clone.
-./start-game.sh --headless --editor --import --quit
+./emberwood --headless --editor --import --quit
 
 # Formatting and linting; supplied by gdtoolkit.
 gdformat --check scripts tests
@@ -112,18 +126,20 @@ ruff format --check tools/run_game_tests.py
 python3 tools/run_game_tests.py
 
 # Launch the playable game.
-./start-game.sh
+./emberwood
 ```
 
 On this computer, `gdformat`, `gdlint`, and `ruff` are available in
 `~/.local/share/phippy-tools/venv/bin/`. Run the checks after changing movement,
 collisions, chapter flow, or the boss, then play the affected sections. The
-campaign best-time key is `game/campaign_best_time` in `user://emberwood.cfg`.
+campaign best-time key is `game/five_chapter_best_time` in `user://emberwood.cfg`.
 
 See [playtest notes](docs/PLAYTEST.md) for verification and screenshots, and
 [visual direction](docs/DESIGN.md) for the pixel title and readable game interface.
 The [combat and progression audit](docs/AUDIT.md) records the boss fixes and
 related interaction checks.
+The [five-chapter expansion notes](docs/EXPANSION.md) track the new areas, gear,
+and verification.
 
 ## Credits
 

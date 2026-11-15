@@ -1,5 +1,9 @@
 # Boss and game-state audit
 
+This audit preceded the [five-chapter expansion](EXPANSION.md). The gate after
+Old Croak now leads to Moss Caverns; the fixes and regression coverage below
+still apply to that encounter.
+
 Old Croak's fight had reproducible hit-detection and retry bugs. The audit also
 found related bounce, protection, and saved-state problems. Each finding below
 was reproduced before its fix and has regression coverage.

@@ -1,0 +1,10 @@
+[
+  {
+    "label": "Play Emberwood",
+    "command": "./emberwood",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "reveal": "no_focus"
+  }
+]

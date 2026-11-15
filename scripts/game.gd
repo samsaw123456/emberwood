@@ -6,7 +6,6 @@ enum State { TITLE, PLAYING, PAUSED, RESPAWNING, WON, CHAPTER_COMPLETE }
 const SAVE_PATH := "user://emberwood.cfg"
 const VIEW_WIDTH := 1152.0
 const CHAPTER_TITLES := ForestChapters.TITLES
-const SHOT_COOLDOWN := 0.35
 
 var state := State.TITLE
 var state_before_pause := State.PLAYING
@@ -121,7 +120,7 @@ func _load_chapter(index: int) -> void:
 	arrows.z_index = 12
 	level.add_child(arrows)
 	shot_cooldown = 0.0
-	if index == CHAPTER_TITLES.size() - 1:
+	if ForestChapters.has_boss(index):
 		boss = ForestBoss.new()
 		boss.position = Vector2(2970, ForestLevel.FLOOR_Y)
 		boss.fox = fox
@@ -389,7 +388,7 @@ func _win() -> void:
 		found += int(result.gems)
 		total += int(result.total)
 		all_secrets = all_secrets and bool(result.secret)
-	hud.show_win(format_time(elapsed), found, total, deaths, all_secrets)
+	hud.show_win(format_time(elapsed), found, total, deaths, all_secrets, CHAPTER_TITLES.size())
 
 
 func _on_jump(double_jump: bool) -> void:
@@ -472,7 +471,7 @@ func _load_settings() -> void:
 	if error != OK:
 		push_warning("Could not read Emberwood settings; using defaults.")
 		return
-	var saved_best := float(config.get_value("game", "campaign_best_time", 0.0))
+	var saved_best := float(config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY, 0.0))
 	best_time = saved_best if is_finite(saved_best) and saved_best > 0.0 else 0.0
 	sound.muted = bool(config.get_value("settings", "muted", false))
 	hud.muted = sound.muted
@@ -492,11 +491,11 @@ func _save_settings(changed_setting: StringName = &"") -> void:
 		hud.toast("Couldn't read saved settings. Your existing save was left unchanged.")
 		return
 	# Another open window may have earned a faster time or changed another setting.
-	var saved_best := float(config.get_value("game", "campaign_best_time", 0.0))
+	var saved_best := float(config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY, 0.0))
 	if is_finite(saved_best) and saved_best > 0.0:
 		if best_time <= 0.0 or saved_best < best_time:
 			best_time = saved_best
-	config.set_value("game", "campaign_best_time", best_time)
+	config.set_value("game", ForestChapters.CAMPAIGN_BEST_KEY, best_time)
 	if changed_setting == &"muted" or not config.has_section_key("settings", "muted"):
 		config.set_value("settings", "muted", sound.muted)
 	if (
@@ -572,10 +571,11 @@ func _activate_camp(index: int) -> void:
 	_sync_equipment()
 	sound.play("camp")
 	_burst(level.camps[index] - Vector2(0, 25), Color("ffc887"), 20)
-	if rewards.has(&"armor"):
-		hud.toast("Leaf armor equipped! It blocks one hit. Choose equipment with Esc.")
-	elif rewards.has(&"bow"):
-		hud.toast("Bow earned and equipped! J shoots. Choose equipment with Esc.")
+	if not rewards.is_empty():
+		var names := PackedStringArray()
+		for item_id in rewards:
+			names.append(ForestEquipment.definition(item_id).name)
+		hud.toast("New gear: %s. J uses your weapon; Esc chooses equipment." % ", ".join(names))
 	else:
 		hud.toast(
 			(
@@ -594,7 +594,9 @@ func _toggle_equipment(item_id: StringName, enabled: bool) -> void:
 
 func _sync_equipment() -> void:
 	fox.bow_equipped = equipment.is_equipped(&"bow")
-	fox.armor_equipped = equipment.is_equipped(&"armor")
+	fox.armor_equipped = equipment.active_armor() != &""
+	fox.weapon_id = equipment.active_weapon()
+	fox.armor_id = equipment.active_armor()
 	fox.armor_charged = equipment.armor_charge > 0
 	fox.queue_redraw()
 	hud.update_equipment(equipment, fox.can_dash())
@@ -607,20 +609,22 @@ func _absorb_hit() -> bool:
 	_sync_equipment()
 	sound.play("armor")
 	_burst(fox.position - Vector2(0, 24), Color("c7dcac"), 12)
-	hud.toast("Armor blocked the hit. Reach a new campfire to recharge it.")
+	var armor_name: String = ForestEquipment.definition(equipment.active_armor()).name
+	hud.toast("%s blocked the hit. Blocks left: %d." % [armor_name, equipment.armor_charge])
 	return true
 
 
 func _shoot() -> void:
-	if state != State.PLAYING or not equipment.is_equipped(&"bow") or shot_cooldown > 0:
+	var weapon := equipment.active_weapon()
+	if state != State.PLAYING or weapon == &"" or shot_cooldown > 0:
 		return
-	shot_cooldown = SHOT_COOLDOWN
+	shot_cooldown = float(ForestEquipment.definition(weapon).cooldown)
 	var arrow := ForestArrow.new()
 	# Start inside the fox's bounds so a muzzle beside a thin wall cannot skip it.
-	arrow.setup(fox.position + Vector2(0, -20), fox.facing, level, boss, fox)
+	arrow.setup(fox.position + Vector2(0, -20), fox.facing, level, boss, fox, weapon)
 	arrow.struck.connect(_on_arrow_struck)
 	arrows.add_child(arrow)
-	sound.play("shoot")
+	sound.play("shoot" if weapon == &"bow" else String(weapon))
 
 
 func _on_arrow_struck(point: Vector2, target: String) -> void:

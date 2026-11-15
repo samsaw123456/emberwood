@@ -1,15 +1,18 @@
 # Emberwood playtest notes
 
-The adventure has three chapters—Emberwood, Flooded Mill, and High Canopy—with
-nine required acorns, 72 optional gems, three hidden fireflies, and Old Croak.
+The adventure has five chapters—Emberwood, Flooded Mill, High Canopy, Moss
+Caverns, and Sunlit Ridge—with 15 required acorns, 108 optional gems, five hidden
+fireflies, and Old Croak. The latest [expansion evidence](EXPANSION.md) includes
+new weapons, armor, levels, and the Zed launcher. Older runs below are retained
+as evidence for the versions they tested.
 Verification uses Godot 4.5.1 on Linux, normally at 60 Hz. Tests use isolated
 saved data through [the runner](../tools/run_game_tests.py).
 
 ## Game checklist
 
 - **Core loop and rules:** title, forest, chapter result/Continue, mill, canopy,
-  boss, final gate, results, and replay. Each gate requires three acorns; the
-  final gate also requires defeating Old Croak. Retries are unlimited.
+  boss, caves, ridge, summit gate, results, and replay. Each gate requires three
+  acorns; the canopy gate also requires defeating Old Croak. Retries are unlimited.
 - **Physics:** acceleration/stopping, variable-height double jump, jump limits,
   coyote time, buffered landing, moving-platform carry/turnaround, crumble and
   recovery. Dash respects walls, cooldown, one airborne use, held-input rules,
@@ -18,17 +21,21 @@ saved data through [the runner](../tools/run_game_tests.py).
 - **Interaction and rewards:** Shift dashes from the start. The second Emberwood
   campfire awards a bow; the third awards armor. Rewards equip immediately and
   can be removed independently in pause. J fires once per press with a cooldown.
+  Later camps add the spear, bark armor, seed bombs, and ironwood armor. Only one
+  weapon and one armor can be equipped at a time. Spears pierce two critters;
+  seed bombs arc and burst nearby, with terrain blocking their blast.
   Arrows use swept collision, hit the first obstruction, and cannot cross thin
   walls beside the fox. Left/right shots, moving/collapsed platforms, misses,
   range cleanup, and simultaneous turn/shoot were checked. Shooting during a
   dash follows its locked facing direction.
-- **Defense and combat:** armor blocks one spike, critter, or boss hit and gives
+- **Defense and combat:** leaf/bark/ironwood armor block one/two/three hits and give
   recovery time; falls still cause retries. A new camp or retry recharges armor;
   returning to an old camp or reequipping does not. Old Croak takes one arrow
   or falling stomp per resting phase. Three hits defeat him. Guarded phases
   reject arrows, including shots through the visible cap. Stomps cross the cap
   from above, and protection does not disable critter attacks. External bounces
   interrupt dashes, leave one air jump, and ignore release of an earlier jump.
+  Switching armor preserves damage already taken; it cannot refill protection.
 - **Navigation:** all required acorns and gates are reachable through movement
   input. Campfires mark safe retry positions. The boss arena closes only when
   its acorns are collected, and reopens on defeat. Camera bounds follow the
@@ -61,27 +68,28 @@ its own directory and has no dependency on the previous project location.
 Local lint tools are in `~/.local/share/phippy-tools/venv/bin/`.
 
 ```sh
-./start-game.sh --headless --editor --import --quit
+./emberwood --headless --editor --import --quit
 gdformat --check scripts tests
 gdlint scripts tests
 ruff check tools/run_game_tests.py
 ruff format --check tools/run_game_tests.py
-sh -n start-game.sh
+sh -n emberwood start-game.sh
+python3 -m json.tool .zed/tasks.json
 python3 tools/check_assets.py
 python3 tools/run_game_tests.py
 git diff --check
 ```
 
 The runner includes `fox`, `platform`, `boss`, `arrow`, `game`, `equipment`,
-`interactions`, `route`, and `campaign`. Pass suite names to run a subset. All
-nine suites passed across the final focused runs. The game integration suite
-passed **201 checks**; equipment passed **83 checks**; full-scene interactions
-passed **30 checks**. Controller, platform, boss, projectile, original-route,
-and full-campaign tests also passed. The arrow test's flight timing now waits
-only on physics ticks, avoiding extra ticks from a delayed render frame.
+`loadout`, `weapons`, `expansion`, `interactions`, `route`, and `campaign`. Pass
+suite names to run a subset. All twelve suites passed across focused runs.
+Game integration passed **223 checks**; equipment **84**; loadout **45**; weapons
+**52**; expansion integration **60**; full-scene interactions **30**. Controller,
+platform, boss, original-route, and full-campaign tests also passed. Physics
+assertions wait on physics ticks instead of delayed rendering frames.
 Formatting, lint, shell syntax, resource import, and documentation links passed.
 
-## Boss audit verification
+## Earlier boss audit verification (three chapters)
 
 The [combat and progression audit](AUDIT.md) records the reproduced faults and
 their fixes. After those changes, a new graphical campaign at normal 60 Hz
@@ -109,7 +117,7 @@ existing game windows.
 - [Checkpoint after a post-victory fall](screenshots/audit-post-victory-checkpoint.png)
 - [Mushroom launching during a dash](screenshots/audit-mushroom.png)
 
-## Graphical and native input evidence
+## Earlier graphical and native input evidence (three chapters)
 
 A complete graphical campaign at normal 60 Hz used movement, jump, dash,
 shooting, and menu input from the title through the ending. No teleport or

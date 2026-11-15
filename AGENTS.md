@@ -1,5 +1,15 @@
 # Phippy AI Game Workshop
 
+## Emberwood launcher for Zed
+
+Whenever the game is updated, update the project-root executable named
+`emberwood` as part of the same change. The user specifically wants a file that
+starts the game from Zed. Preserve its exact lowercase name and executable bit,
+its portable delegation to `start-game.sh`, and the "Play Emberwood" project
+task in `.zed/tasks.json`. Update its brief feature comments to match the current
+game, and verify it launches the current project. Keep detailed notes in docs;
+do not replace the launcher with a text-only update record.
+
 ## Project-specific design constraints
 
 The user explicitly rejected the "FIELD GUIDE / THREE CROSSINGS" title treatment.

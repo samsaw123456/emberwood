@@ -241,7 +241,7 @@ func _test_chapters_and_boss() -> void:
 	await _step(3)
 	_check(not game.boss_started, "Missing acorns cannot start a fight that traps the fox.")
 	_check(not is_instance_valid(game.arena_wall), "The route back stays open with missing acorns.")
-	_check(game.state == Adventure.State.PLAYING, "The final gate is locked before the fight.")
+	_check(game.state == Adventure.State.PLAYING, "The canopy gate is locked before the fight.")
 	await _collect_acorns()
 	game.fox.reset_at(Vector2(2660, ForestLevel.FLOOR_Y))
 	await _step(3)
@@ -260,19 +260,26 @@ func _test_chapters_and_boss() -> void:
 	_check(not game.level.gate_open, "The live boss keeps the gate locked.")
 	await _test_boss_pause_and_retry()
 	await _finish_boss_by_stomping()
-	_check(game.level.gate_open, "Defeating Old Croak opens the final gate.")
+	_check(game.level.gate_open, "Defeating Old Croak opens the canopy gate.")
 	_check(not is_instance_valid(game.arena_wall), "Defeat removes the arena barrier.")
 	await _test_defeated_boss_retry()
 	game.fox.reset_at(game.level.gate)
 	await _step(3)
+	_check(
+		game.state == Adventure.State.CHAPTER_COMPLETE,
+		"Old Croak's gate continues the expanded adventure instead of ending it."
+	)
+	await _test_later_chapters()
 	_check(game.state == Adventure.State.WON, "The cleared gate finishes the full campaign.")
 	_check(not game.fox.active and not game.level.active, "Campaign victory freezes hazards.")
 	_check(game.best_time > 0.0, "Campaign victory records its total finishing time.")
 	var config := ConfigFile.new()
 	_check(config.load(Adventure.SAVE_PATH) == OK, "Campaign victory writes its record.")
 	_check(
-		is_equal_approx(float(config.get_value("game", "campaign_best_time", 0.0)), game.best_time),
-		"Campaign records use a separate key from the original one-level record."
+		is_equal_approx(
+			float(config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY, 0.0)), game.best_time
+		),
+		"Five-chapter records use a separate key from earlier shorter adventures."
 	)
 	var finish_time: float = game.elapsed
 	await _step(5)
@@ -300,9 +307,32 @@ func _collect_acorns() -> void:
 	_check(game.level.taken_acorns.size() == 3, "The chapter's three acorns collect by contact.")
 
 
+func _test_later_chapters() -> void:
+	var old_boss: ForestBoss = game.boss
+	for chapter in [3, 4]:
+		_press_button("Continue")
+		_check(game.stage_index == chapter, "Continue reaches the correct expanded chapter.")
+		_check(not is_instance_valid(game.boss), "Old Croak stays in High Canopy.")
+		_check(game.level.taken_acorns.is_empty(), "Expanded chapters begin with fresh acorns.")
+		await _step(3)
+		_check(
+			not is_instance_valid(old_boss), "The completed boss is freed after leaving the canopy."
+		)
+		_check(game.fox.is_on_floor(), "The new chapter's entrance camp is on safe ground.")
+		game.fox.reset_at(game.level.gate)
+		await _step(3)
+		_check(game.state == Adventure.State.PLAYING, "New gates still require all three acorns.")
+		await _collect_acorns()
+		game.fox.reset_at(game.level.gate)
+		await _step(3)
+		var expected := Adventure.State.CHAPTER_COMPLETE if chapter == 3 else Adventure.State.WON
+		_check(game.state == expected, "Only the summit gate ends the adventure.")
+	_check(game.chapter_results.size() == 4, "All four earlier chapters contribute to the ending.")
+
+
 func _test_boss_pause_and_retry() -> void:
 	_press_button("Ⅱ")
-	game._toggle_equipment(&"armor", false)
+	game._toggle_equipment(game.equipment.active_armor(), false)
 	_check(not game.fox.armor_equipped, "Armor can be removed to test ordinary boss damage.")
 	var phase_time: float = game.boss.phase_time
 	var boss_position: Vector2 = game.boss.position
@@ -452,7 +482,8 @@ func _test_settings_reload() -> void:
 
 func _test_save_merging() -> void:
 	var config := ConfigFile.new()
-	config.set_value("game", "campaign_best_time", 0.0)
+	config.set_value("game", "campaign_best_time", 42.0)
+	config.set_value("game", ForestChapters.CAMPAIGN_BEST_KEY, 0.0)
 	config.set_value("settings", "muted", false)
 	config.set_value("settings", "reduced_motion", false)
 	config.set_value("future_options", "keep_me", "unchanged")
@@ -462,17 +493,22 @@ func _test_save_merging() -> void:
 	var newer: Node2D = MAIN.instantiate()
 	root.add_child(newer)
 	await _step(2)
+	_check(older.best_time == 0.0, "A shorter three-chapter record is not used for five chapters.")
 	newer.best_time = 91.0
 	newer._save_settings()
 	newer._toggle_motion(true)
 	older._toggle_sound(true)
 	_check(config.load(Adventure.SAVE_PATH) == OK, "The shared save remains readable.")
 	_check(
-		config.get_value("game", "campaign_best_time") == 91.0,
+		config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY) == 91.0,
 		"An older window cannot erase a newer best time."
 	)
 	_check(older.best_time == 91.0, "Saving also refreshes the older window's best time.")
 	_check(config.get_value("settings", "muted"), "The requested mute change is saved.")
+	_check(
+		config.get_value("game", "campaign_best_time") == 42.0,
+		"The old three-chapter record is preserved separately."
+	)
 	_check(
 		config.get_value("settings", "reduced_motion"),
 		"Changing sound preserves another window's motion choice."
@@ -481,7 +517,7 @@ func _test_save_merging() -> void:
 	older._save_settings()
 	_check(config.load(Adventure.SAVE_PATH) == OK, "A new winning time is saved.")
 	_check(
-		config.get_value("game", "campaign_best_time") == 80.0,
+		config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY) == 80.0,
 		"A faster new record replaces the previous record."
 	)
 	_check(
@@ -491,7 +527,7 @@ func _test_save_merging() -> void:
 	newer._toggle_motion(false)
 	_check(config.load(Adventure.SAVE_PATH) == OK, "The second preference change is saved.")
 	_check(
-		config.get_value("game", "campaign_best_time") == 80.0,
+		config.get_value("game", ForestChapters.CAMPAIGN_BEST_KEY) == 80.0,
 		"A stale slower record cannot replace a faster one."
 	)
 	_check(

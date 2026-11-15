@@ -2,16 +2,76 @@ class_name ForestChapters
 extends RefCounted
 ## Hand-built routes. Coordinates use the same feet-based scale as the fox.
 
-const TITLES := ["Emberwood", "Flooded Mill", "High Canopy"]
+const TITLES := ["Emberwood", "Flooded Mill", "High Canopy", "Moss Caverns", "Sunlit Ridge"]
+const CAMPAIGN_BEST_KEY := "five_chapter_best_time"
+
+
+static func has_boss(index: int) -> bool:
+	return index == 2
 
 
 static func layout(index: int) -> Dictionary:
-	if index == 1:
-		return _mill()
-	return _canopy()
+	match index:
+		1:
+			return _mill()
+		2:
+			return _canopy()
+		3:
+			return _caverns()
+		4:
+			return _ridge()
+	push_error("Unknown chapter layout: %d" % index)
+	return {}
 
 
 static func route(index: int) -> Array:
+	if index == 3:
+		return [
+			["walk", 300.0, 536.0],
+			["jump", 500.0, 536.0],
+			["jump", 610.0, 416.0],
+			["jump", 785.0, 360.0],
+			["moving", 940.0, 455.0],
+			["jump", 1230.0, 536.0],
+			["walk", 1280.0, 536.0],
+			["jump", 1510.0, 410.0],
+			["jump", 1680.0, 320.0],
+			["jump", 1875.0, 390.0],
+			["jump", 2050.0, 440.0],
+			["jump", 2180.0, 536.0],
+			["walk", 2250.0, 536.0],
+			["jump", 2400.0, 536.0],
+			["jump", 2615.0, 390.0],
+			["moving", 2700.0, 450.0],
+			["jump", 2980.0, 536.0],
+			["walk", 3030.0, 536.0],
+			["jump", 3240.0, 536.0],
+			["walk", 3290.0, 536.0]
+		]
+	if index == 4:
+		return [
+			["walk", 240.0, 536.0],
+			["jump", 450.0, 536.0],
+			["jump", 605.0, 430.0],
+			["jump", 825.0, 360.0],
+			["moving", 890.0, 455.0],
+			["jump", 1080.0, 536.0],
+			["jump", 1325.0, 400.0],
+			["jump", 1550.0, 450.0],
+			["moving", 1680.0, 405.0],
+			["jump", 1970.0, 536.0],
+			["walk", 2040.0, 536.0],
+			["jump", 2230.0, 536.0],
+			["jump", 2365.0, 400.0],
+			["jump", 2555.0, 310.0],
+			["jump", 2715.0, 415.0],
+			["jump", 2840.0, 536.0],
+			["walk", 2860.0, 536.0],
+			["walk", 3020.0, 536.0],
+			["jump", 3240.0, 536.0],
+			["jump", 3410.0, 536.0],
+			["walk", 3450.0, 536.0]
+		]
 	if index == 1:
 		return [
 			["walk", 270.0, 536.0],
@@ -33,6 +93,9 @@ static func route(index: int) -> Array:
 			["jump", 3380.0, 536.0],
 			["walk", 3420.0, 536.0]
 		]
+	if index != 2:
+		push_error("Unknown chapter route: %d" % index)
+		return []
 	return [
 		["walk", 250.0, 536.0],
 		["jump", 450.0, 536.0],
@@ -113,7 +176,7 @@ static func _canopy() -> Dictionary:
 		"title": TITLES[2],
 		"width": 3600.0,
 		"gate": Vector2(3450, 536),
-		"gate_label": "The hollow tree",
+		"gate_label": "Into the caverns",
 		"ground": [Vector2(0, 500), Vector2(1080, 1410), Vector2(1970, 2440), Vector2(2500, 3600)],
 		"ledges":
 		[
@@ -169,5 +232,129 @@ static func _canopy() -> Dictionary:
 				"OLD CROAK'S HOLLOW",
 				"Jump over the ripples. Watch for his golden cap."
 			]
+		]
+	}
+
+
+static func _caverns() -> Dictionary:
+	return {
+		"title": TITLES[3],
+		"width": 3420.0,
+		"gate": Vector2(3290, 536),
+		"gate_label": "The daylight passage",
+		"ground": [Vector2(0, 760), Vector2(1190, 1710), Vector2(2100, 2620), Vector2(2910, 3420)],
+		"ledges":
+		[
+			Rect2(540, 416, 140, 28),
+			Rect2(730, 360, 110, 28),
+			Rect2(1450, 410, 140, 28),
+			Rect2(1630, 320, 110, 28),
+			Rect2(2000, 440, 100, 28),
+			Rect2(2550, 390, 130, 28)
+		],
+		"moving":
+		[[Rect2(940, 455, 130, 28), Vector2(45, 0)], [Rect2(2700, 450, 140, 28), Vector2(0, 45)]],
+		"crumble": [Rect2(1820, 390, 110, 28)],
+		"spikes": [Vector2(360, 60), Vector2(2320, 60)],
+		"acorns": [Vector2(610, 380), Vector2(1510, 374), Vector2(2615, 354)],
+		"camps": [Vector2(140, 536), Vector2(1280, 536), Vector2(2180, 536), Vector2(3030, 536)],
+		"mushrooms": [],
+		"secret": Vector2(1680, 284),
+		"critters":
+		[
+			{"home": Vector2(1390, 536), "range": 15.0, "speed": 1.3, "out": false},
+			{"home": Vector2(1440, 536), "range": 15.0, "speed": 1.1, "out": false},
+			{"home": Vector2(3140, 536), "range": 30.0, "speed": 1.5, "out": false}
+		],
+		"gems":
+		[
+			Vector2(265, 490),
+			Vector2(390, 426),
+			Vector2(610, 375),
+			Vector2(785, 324),
+			Vector2(960, 410),
+			Vector2(1120, 450),
+			Vector2(1280, 490),
+			Vector2(1510, 370),
+			Vector2(1680, 280),
+			Vector2(1875, 354),
+			Vector2(2050, 404),
+			Vector2(2180, 490),
+			Vector2(2350, 426),
+			Vector2(2615, 350),
+			Vector2(2770, 380),
+			Vector2(2980, 490),
+			Vector2(3160, 420),
+			Vector2(3290, 490)
+		],
+		"signs":
+		[
+			[Vector2(165, 375), "Moss Caverns", "Follow the roots toward daylight."],
+			[Vector2(1180, 300), "Seed bombs", "J lobs a seed. Its burst catches nearby critters."],
+			[Vector2(1740, 245), "Loose stone", "This crossing crumbles under your paws."],
+			[Vector2(2920, 375), "Fresh air", "The ridge is just beyond this passage."]
+		]
+	}
+
+
+static func _ridge() -> Dictionary:
+	return {
+		"title": TITLES[4],
+		"width": 3600.0,
+		"gate": Vector2(3450, 536),
+		"gate_label": "The summit trail",
+		"ground": [Vector2(0, 610), Vector2(1000, 1450), Vector2(1910, 2410), Vector2(2780, 3600)],
+		"ledges":
+		[
+			Rect2(540, 430, 130, 28),
+			Rect2(760, 360, 130, 28),
+			Rect2(1260, 400, 130, 28),
+			Rect2(2300, 400, 130, 28),
+			Rect2(2500, 310, 110, 28)
+		],
+		"moving":
+		[[Rect2(890, 455, 130, 28), Vector2(0, 35)], [Rect2(1680, 405, 130, 28), Vector2(40, 0)]],
+		"crumble": [Rect2(1500, 450, 100, 28), Rect2(2660, 415, 110, 28)],
+		"spikes": [Vector2(290, 60), Vector2(2090, 60), Vector2(3070, 90)],
+		"acorns": [Vector2(605, 394), Vector2(1325, 364), Vector2(2365, 364)],
+		"camps": [Vector2(140, 536), Vector2(1080, 536), Vector2(1970, 536), Vector2(2860, 536)],
+		"mushrooms": [],
+		"secret": Vector2(2555, 274),
+		"critters":
+		[
+			{"home": Vector2(1190, 536), "range": 25.0, "speed": 1.6, "out": false},
+			{"home": Vector2(3310, 536), "range": 25.0, "speed": 1.8, "out": false}
+		],
+		"gems":
+		[
+			Vector2(220, 490),
+			Vector2(320, 426),
+			Vector2(605, 390),
+			Vector2(825, 324),
+			Vector2(955, 400),
+			Vector2(1080, 490),
+			Vector2(1325, 360),
+			Vector2(1550, 414),
+			Vector2(1745, 360),
+			Vector2(1970, 490),
+			Vector2(2120, 426),
+			Vector2(2365, 360),
+			Vector2(2555, 270),
+			Vector2(2715, 379),
+			Vector2(2860, 490),
+			Vector2(3115, 426),
+			Vector2(3310, 420),
+			Vector2(3450, 490)
+		],
+		"signs":
+		[
+			[Vector2(160, 375), "Sunlit Ridge", "Cross the stone shelves to the summit."],
+			[
+				Vector2(1010, 290),
+				"Ironwood armor",
+				"Three blocks when fresh. Change gear with Esc."
+			],
+			[Vector2(2400, 230), "A high roost", "A firefly is hiding above the last crossing."],
+			[Vector2(2850, 365), "The final stretch", "Watch the thorns. The summit gate is ahead."]
 		]
 	}

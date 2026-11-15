@@ -8,6 +8,7 @@ const GEM := preload("res://assets/pixel/items/sunnyland/gem-sparkle-sheet.png")
 const SPIKES := preload("res://assets/pixel/hazards/sunnyland/spikes.png")
 const OPOSSUM := preload("res://assets/pixel/animals/sunnyland/opossum-run-sheet.png")
 const TREE := preload("res://assets/pixel/nature/sunnyland/tree.png")
+const PINE := preload("res://assets/pixel/nature/sunnyland/pine.png")
 const BUSH := preload("res://assets/pixel/nature/sunnyland/bush.png")
 const SHROOM := preload("res://assets/pixel/nature/sunnyland/shrooms.png")
 const ROCK := preload("res://assets/pixel/nature/sunnyland/rock-2.png")
@@ -104,6 +105,10 @@ func zone_title(x: float) -> String:
 		return "The Millpond" if x < 1580 else "The Broken Race"
 	if stage_index == 2:
 		return "Branch Walk" if x < 2500 else "Old Croak's Hollow"
+	if stage_index == 3:
+		return "Root Galleries" if x < 1720 else "Daylight Passage"
+	if stage_index == 4:
+		return "Stone Shelves" if x < 1900 else "Summit Approach"
 	if x >= 3950:
 		return "Moonlit Grove"
 	return "Bramble Crossing" if x >= 1900 else "Mossy Trail"
@@ -166,6 +171,10 @@ func add_platform(rect: Rect2, kind: String = "ground", motion := Vector2.ZERO) 
 		platform.modulate = Color("c7c4af")
 	elif stage_index == 2:
 		platform.modulate = Color("c0cda7")
+	elif stage_index == 3:
+		platform.modulate = Color("a4b8a1")
+	elif stage_index == 4:
+		platform.modulate = Color("dbc99b")
 	add_child(platform)
 	platforms.append(platform)
 
@@ -285,6 +294,14 @@ func _draw_decorations() -> void:
 	for decor in decorations:
 		var point: Vector2 = decor.pos
 		if absf(point.x - camera_x - 576) > 850:
+			continue
+		if stage_index == 3:
+			_draw_cavern_growth(point, decor.kind)
+			continue
+		if stage_index == 4 and decor.kind == 0:
+			draw_texture_rect(
+				PINE, Rect2(point - Vector2(75, 250), Vector2(150, 250)), false, Color("b2b78a")
+			)
 			continue
 		match decor.kind:
 			0:
@@ -418,7 +435,36 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 				4
 			)
 			draw_line(pos + Vector2(-5, -18), pos + Vector2(-5, 18), Color("eee6c8"), 1)
+		elif item.id == &"spear":
+			draw_line(pos + Vector2(-16, 17), pos + Vector2(13, -12), Color("9b683d"), 4)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[pos + Vector2(9, -16), pos + Vector2(23, -23), pos + Vector2(16, -9)]
+				),
+				Color("c9d4c7")
+			)
+			draw_line(pos + Vector2(9, -7), pos + Vector2(14, -12), Color("68835a"), 5)
+		elif item.id == &"seed_bomb":
+			draw_circle(pos, 14, Color("547344"))
+			draw_rect(Rect2(pos + Vector2(-9, -7), Vector2(18, 14)), Color("a5b56a"))
+			draw_line(pos + Vector2(0, -13), pos + Vector2(3, -21), Color("728b51"), 3)
+			draw_colored_polygon(
+				PackedVector2Array(
+					[
+						pos + Vector2(2, -16),
+						pos + Vector2(6, -26),
+						pos + Vector2(17, -22),
+						pos + Vector2(10, -15)
+					]
+				),
+				Color("a8bc72")
+			)
 		else:
+			var armor_color := Color("9ab880")
+			if item.id == &"bark_armor":
+				armor_color = Color("b38a57")
+			elif item.id == &"ironwood_armor":
+				armor_color = Color("83948c")
 			draw_colored_polygon(
 				PackedVector2Array(
 					[
@@ -429,15 +475,21 @@ func _draw_camp_reward(index: int, pos: Vector2) -> void:
 						pos + Vector2(-12, 5)
 					]
 				),
-				Color("9ab880")
+				armor_color
 			)
 			draw_line(pos + Vector2(0, -12), pos + Vector2(0, 12), Color("e6d9a8"), 3)
+			if item.id == &"bark_armor":
+				draw_line(pos + Vector2(-7, -10), pos + Vector2(-7, 5), Color("63472e"), 2)
+				draw_line(pos + Vector2(7, -10), pos + Vector2(7, 5), Color("63472e"), 2)
+			elif item.id == &"ironwood_armor":
+				for row in [-8, 0, 8]:
+					draw_line(pos + Vector2(-8, row), pos + Vector2(8, row), Color("3a514e"), 3)
 		draw_string(
 			ROUTE_FONT,
-			pos + Vector2(-60, -31),
+			pos + Vector2(-80, -31),
 			item.name,
 			HORIZONTAL_ALIGNMENT_CENTER,
-			120,
+			160,
 			16,
 			Color("f5e6be")
 		)
@@ -476,7 +528,7 @@ func _draw_gate() -> void:
 		HORIZONTAL_ALIGNMENT_CENTER,
 		260,
 		17,
-		Color("f7e7be")
+		Color("304638") if stage_index == 4 else Color("f7e7be")
 	)
 	var hint := "Continue the trail" if unlocked else "Find all 3 magic acorns"
 	if stage_index == 2:
@@ -489,9 +541,11 @@ func _draw_gate() -> void:
 func _draw_sign(sign: Dictionary) -> void:
 	var pos: Vector2 = sign.pos
 	var font := ROUTE_FONT
-	draw_string(font, pos, sign.title, HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("ffdeab"))
+	var title_color := Color("304638") if stage_index == 4 else Color("ffdeab")
+	var hint_color := Color("344b40") if stage_index == 4 else Color("e2e5ce")
+	draw_string(font, pos, sign.title, HORIZONTAL_ALIGNMENT_LEFT, -1, 19, title_color)
 	draw_string(
-		font, pos + Vector2(0, 24), sign.hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("e2e5ce")
+		font, pos + Vector2(0, 24), sign.hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, hint_color
 	)
 
 
@@ -515,3 +569,24 @@ func _draw_millpond() -> void:
 				Rect2(x - 5, platform.position.y + 25, 10, 680 - platform.position.y),
 				Color("494b49")
 			)
+
+
+func _draw_cavern_growth(point: Vector2, kind: int) -> void:
+	if kind % 2 == 0:
+		draw_texture_rect(
+			ROCK, Rect2(point - Vector2(50, 81), Vector2(100, 86)), false, Color("a2b09a")
+		)
+		for root_index in 3:
+			var start := point + Vector2(-27 + root_index * 19, -50 + root_index * 9)
+			draw_polyline(
+				PackedVector2Array([start, start + Vector2(9, 19), start + Vector2(3, 40)]),
+				Color("7f8058"),
+				3
+			)
+	else:
+		draw_texture_rect(
+			SHROOM, Rect2(point - Vector2(25, 34), Vector2(50, 38)), false, Color("a9b990")
+		)
+		draw_texture_rect(
+			BUSH, Rect2(point + Vector2(16, -24), Vector2(45, 28)), false, Color("87a778")
+		)
