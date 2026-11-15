@@ -22,6 +22,8 @@ SUITES = (
     "expansion",
     "journey",
     "interactions",
+    "monsters",
+    "settings_migration",
     "route",
     "trails",
     "campaign",

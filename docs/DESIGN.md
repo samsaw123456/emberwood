@@ -1,8 +1,8 @@
 # Emberwood interface
 
 The title menu uses the opening level itself: the fox, acorns, trees, platforms,
-and spikes remain visible. A small, static pixel wordmark is drawn from original
-5-by-7 glyphs in `scripts/hud.gd`. It has no entrance animation, hover movement,
+and spikes remain visible. The static title uses the bundled bold font at 38 pixels,
+spelling Emberwood as actual label text. The old handmade letters were ambiguous. It has no entrance animation, hover movement,
 letter spacing effect, or oversized headline treatment. The Start button is sized
 for its text, and the instructions describe the actual controls and objective.
 
@@ -16,8 +16,7 @@ compact game menus determine the composition here.
 
 DejaVu Sans regular is bundled for controls, counters, and instructions. The bold
 weight distinguishes menu actions and short state headings. These fonts have clear
-small numerals, arrows, and health marks. The title's bitmap lettering is separate
-from readable interface text; it is not used for paragraphs or small controls.
+small numerals, arrows, and health marks. The title uses the same legible family, at a modest heading size.
 Both font files retain their [license](../assets/fonts/LICENSE.txt).
 
 Cream text, muted green controls, and gold focus outlines borrow colors already in

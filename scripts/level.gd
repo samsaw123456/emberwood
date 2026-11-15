@@ -6,7 +6,6 @@ const FLOOR_Y := 536.0
 const ROUTE_FONT := preload("res://assets/fonts/DejaVuSans.ttf")
 const GEM := preload("res://assets/pixel/items/sunnyland/gem-sparkle-sheet.png")
 const SPIKES := preload("res://assets/pixel/hazards/sunnyland/spikes.png")
-const OPOSSUM := preload("res://assets/pixel/animals/sunnyland/opossum-run-sheet.png")
 const TREE := preload("res://assets/pixel/nature/sunnyland/tree.png")
 const PINE := preload("res://assets/pixel/nature/sunnyland/pine.png")
 const BUSH := preload("res://assets/pixel/nature/sunnyland/bush.png")
@@ -50,6 +49,7 @@ func _ready() -> void:
 	scenery_theme = ForestChapters.theme(stage_index)
 	if stage_index > 0:
 		_build_chapter()
+		_prepare_critters()
 		_build_decorations()
 		return
 	_build_terrain()
@@ -68,6 +68,16 @@ func _ready() -> void:
 		{"home": Vector2(4680, 536), "range": 65.0, "speed": 1.6, "out": false},
 		{"home": Vector2(5850, 536), "range": 90.0, "speed": 1.9, "out": false},
 	]
+
+	_prepare_critters()
+
+
+func _prepare_critters() -> void:
+	for index in critters.size():
+		if not critters[index].has("kind"):
+			critters[index].kind = ForestCritters.KINDS[
+				(stage_index + index) % ForestCritters.KINDS.size()
+			]
 
 
 func _build_chapter() -> void:
@@ -274,11 +284,11 @@ func reset_hazards() -> void:
 
 
 func critter_position(critter: Dictionary) -> Vector2:
-	return critter.home + Vector2(sin(age * critter.speed) * critter.range, 0)
+	return ForestCritters.position(critter, age)
 
 
 func critter_bounds(critter: Dictionary) -> Rect2:
-	return Rect2(critter_position(critter) - Vector2(25, 29), Vector2(50, 29))
+	return ForestCritters.bounds(critter, age)
 
 
 func _physics_process(delta: float) -> void:
@@ -428,12 +438,7 @@ func _draw_critters() -> void:
 	for critter in critters:
 		if critter.out:
 			continue
-		var pos := critter_position(critter)
-		var frame := int(age * 10) % 6
-		var facing := -1.0 if cos(age * critter.speed) > 0 else 1.0
-		draw_set_transform(pos, 0, Vector2(facing, 1))
-		draw_texture_rect_region(OPOSSUM, Rect2(-36, -50, 72, 56), Rect2(frame * 36, 0, 36, 28))
-		draw_set_transform(Vector2.ZERO)
+		ForestCritters.draw_critter(self, critter, age, reduced_motion)
 
 
 func _draw_camp_reward(index: int, pos: Vector2) -> void:

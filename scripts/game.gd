@@ -260,8 +260,9 @@ func _check_hazards() -> void:
 		if critter.out:
 			continue
 		var pos := level.critter_position(critter)
-		if bounds.intersects(level.critter_bounds(critter)):
-			if fox.velocity.y > 40 and fox.position.y < pos.y - 12:
+		var target := level.critter_bounds(critter)
+		if bounds.intersects(target):
+			if fox.velocity.y > 40 and fox.position.y < target.get_center().y:
 				critter.out = true
 				fox.bounce(-440)
 				_burst(pos - Vector2(0, 20), Color("d7b2df"), 12)
@@ -471,9 +472,21 @@ func _toggle_motion(value: bool) -> void:
 	_save_settings(&"reduced_motion")
 
 
+func _read_settings(config: ConfigFile) -> Error:
+	var error := config.load(SAVE_PATH)
+	if error != ERR_FILE_NOT_FOUND:
+		return error
+	# The ASCII window title changes Godot's default data-directory name.
+	# Read older preferences until the first normal save creates the new file.
+	var previous := OS.get_user_data_dir().get_base_dir().path_join(
+		"Emberwood — Forest Adventure/emberwood.cfg"
+	)
+	return config.load(previous)
+
+
 func _load_settings() -> void:
 	var config := ConfigFile.new()
-	var error := config.load(SAVE_PATH)
+	var error := _read_settings(config)
 	if error == ERR_FILE_NOT_FOUND:
 		return
 	if error != OK:
@@ -494,7 +507,7 @@ func _load_settings() -> void:
 
 func _save_settings(changed_setting: StringName = &"") -> void:
 	var config := ConfigFile.new()
-	var error := config.load(SAVE_PATH)
+	var error := _read_settings(config)
 	if error != OK and error != ERR_FILE_NOT_FOUND:
 		hud.toast("Couldn't read saved settings. Your existing save was left unchanged.")
 		return

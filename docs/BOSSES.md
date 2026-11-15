@@ -1,3 +1,5 @@
+> Previous release: v1.1.0. See [regular monsters](MONSTERS.md) for v1.2.0.
+
 # Six forest guardians
 
 A guardian blocks the gate every third level. All take three hits, one per gold-cap

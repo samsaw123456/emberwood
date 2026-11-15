@@ -30,6 +30,14 @@ and snowy mountains.
 Each level has **3 required acorns** and a hidden firefly. There are **60 acorns,
 378 optional gems, and 20 hidden fireflies** across the complete adventure.
 
+## Regular monsters
+
+Fight **opossums, moss slimes, bramble beetles, and cave bats** throughout the
+adventure. Slimes hop, beetles patrol quickly, and bats fly low. Jump and shoot to
+reach a bat, or land on it from above. All four fall to one stomp or weapon hit;
+side contact hurts unless armor or temporary protection absorbs it. Monsters return
+when you retry. There are 15 additional patrols across levels 6–20.
+
 ## Play
 
 For other Linux players, the [downloadable installer](https://github.com/samsaw123456/emberwood/releases/latest)
@@ -175,7 +183,7 @@ python3 tools/run_game_tests.py
 On this computer, `gdformat`, `gdlint`, and `ruff` are available in
 `~/.local/share/phippy-tools/venv/bin/`. Run the checks after changing movement,
 collisions, chapter flow, or the boss, then play the affected sections. The
-campaign best-time key is `game/six_guardians_best_time` in `user://emberwood.cfg`.
+campaign best-time key is `game/forest_monsters_best_time` in `user://emberwood.cfg`.
 
 See [playtest notes](docs/PLAYTEST.md) for verification and screenshots, and
 [visual direction](docs/DESIGN.md) for the pixel title and readable game interface.

@@ -68,6 +68,19 @@ static func layout(index: int, title: String) -> Dictionary:
 		var shape := _section(course[section])
 		_append_section(data, shape, origin, section == 1)
 		data.signs.append([Vector2(origin + 130, 315), names[section], shape.hint])
+	# The middle bank has room for a monster, clear of campfires, gaps and spikes.
+	data.critters.append(
+		{
+			"home": Vector2(1030, FLOOR),
+			"range": 40.0,
+			"speed": 1.5,
+			"out": false,
+			"kind": ForestCritters.KINDS[1 + (index - 5) % 3]
+		}
+	)
+	for step: Array in data.route:
+		if step[0] == "walk" and step[1] >= 1100 and step[1] <= 1120:
+			step[0] = "jump"
 	data.ground.append(Vector2(2700, 3100))
 	data.spikes.append(Vector2(2750, 70))
 	data.critters.append({"home": Vector2(2850, FLOOR), "range": 18.0, "speed": 1.5, "out": false})

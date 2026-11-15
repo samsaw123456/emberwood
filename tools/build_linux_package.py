@@ -10,7 +10,7 @@ from pathlib import Path
 
 from install_app import desktop_entry
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -99,7 +99,7 @@ def main() -> None:
         )
         (documentation / "changelog.gz").write_bytes(
             gzip.compress(
-                f"Emberwood {VERSION}: six guardians, one every third level.\n".encode(),
+                f"Emberwood {VERSION}: regular monsters and a clearer opening title.\n".encode(),
                 mtime=0,
             )
         )

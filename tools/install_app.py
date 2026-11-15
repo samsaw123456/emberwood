@@ -20,7 +20,7 @@ def desktop_entry(launcher: Path) -> str:
         f'Exec="{executable}"\n'
         "Icon=emberwood\n"
         "Terminal=false\n"
-        "StartupWMClass=Emberwood — Forest Adventure\n"
+        "StartupWMClass=Emberwood - Forest Adventure\n"
         "Categories=Game;AdventureGame;\n"
         "Keywords=fox;forest;platformer;offline;\n"
     )

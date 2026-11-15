@@ -24,7 +24,7 @@ const TITLES := [
 	"Sunleaf Crown",
 	"Heart of Emberwood"
 ]
-const CAMPAIGN_BEST_KEY := "six_guardians_best_time"
+const CAMPAIGN_BEST_KEY := "forest_monsters_best_time"
 # One guardian every third chapter. Shared rules keep the gold-cap opening readable.
 const GUARDIANS := [
 	{

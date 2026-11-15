@@ -1,6 +1,6 @@
 class_name ForestHUD
 extends CanvasLayer
-## Readable game controls over the forest, with a small hand-drawn pixel title.
+## Readable game controls and clear lettering over the forest.
 
 signal start_requested
 signal resume_requested
@@ -60,43 +60,6 @@ var _required_acorns := 3
 var _boss_requested := false
 
 
-class PixelTitle:
-	extends Control
-
-	# Original 5-by-7 letter shapes; the title is still and does not resize on hover.
-	const GLYPHS := {
-		"E": ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
-		"m": ["00000", "00000", "11010", "10101", "10101", "10101", "10101"],
-		"b": ["10000", "10000", "10110", "11001", "10001", "10001", "11110"],
-		"e": ["00000", "00000", "01110", "10001", "11111", "10000", "01111"],
-		"r": ["00000", "00000", "10110", "11001", "10000", "10000", "10000"],
-		"w": ["00000", "00000", "10001", "10001", "10101", "10101", "01010"],
-		"o": ["00000", "00000", "01110", "10001", "10001", "10001", "01110"],
-		"d": ["00001", "00001", "01101", "10011", "10001", "10001", "01111"]
-	}
-	const PIXEL := 6
-
-	func _draw() -> void:
-		for pass_index in 2:
-			var offset := Vector2(0, 4) if pass_index == 0 else Vector2.ZERO
-			var color := Color("142a28") if pass_index == 0 else Color("efc16f")
-			for letter_index in "Emberwood".length():
-				var rows: Array = GLYPHS["Emberwood"[letter_index]]
-				for row in rows.size():
-					for column in 5:
-						if rows[row][column] == "1":
-							draw_rect(
-								Rect2(
-									(
-										Vector2((letter_index * 6 + column) * PIXEL, row * PIXEL)
-										+ offset
-									),
-									Vector2(PIXEL, PIXEL)
-								),
-								color
-							)
-
-
 func _ready() -> void:
 	layer = 20
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -120,10 +83,10 @@ func _ready() -> void:
 func show_title(best: float) -> void:
 	var menu := _open_menu(Vector2(680, 432), 0.25)
 	menu.position.y = 74
-	var title := PixelTitle.new()
-	title.position = Vector2(181, 0)
-	title.size = Vector2(318, 46)
-	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var title := _label("Emberwood", 38, GOLD, true)
+	title.name = "GameTitle"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.size = Vector2(680, 50)
 	menu.add_child(title)
 	_center_text(menu, "%d levels. Find 3 acorns in each." % ForestChapters.TITLES.size(), 20, 77)
 	_center_text(menu, "Earn weapons and armor at campfires.", 18, 111, QUIET_TEXT)
