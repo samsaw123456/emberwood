@@ -89,3 +89,12 @@ a frog. SunnyLand supplies the frog, opossum and eagle; original pixel silhouett
 provide the boar, wolf and owl. Keep the shared gold-cap weak point, but align it
 with each body. Leap height, warning time and ripple speed vary by encounter. Five extended banks place fights beyond all obstacles and collectibles,
 with a safe arena camp and dynamic names in the HUD. See [boss notes](BOSSES.md).
+
+## Monster recognition
+
+The first ordinary monster drawings were too small and lacked distinctive features.
+Give the slime a broad dripping jelly silhouette, the beetle wing cases, six legs
+and antennae, and the bat scalloped flapping wings, tall ears and fangs. Use bright
+highlights and dark edges against actual scenery. Check all three at 800×600;
+labels or a few extra colored pixels cannot substitute for recognizable shapes.
+See [monster artwork](MONSTER_ART.md) for current screenshots and playtests.

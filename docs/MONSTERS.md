@@ -1,3 +1,5 @@
+> Previous release: v1.2.0. See [clearer monster artwork](MONSTER_ART.md) for v1.2.1.
+
 # Regular monsters and readable opening title
 
 Scope: fix garbled window-title characters, clarify opening lettering, and add ordinary enemies,

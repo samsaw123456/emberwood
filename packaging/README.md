@@ -1,6 +1,6 @@
 # Linux installer
 
-Download `emberwood_1.2.0_amd64.deb` from
+Download `emberwood_1.2.1_amd64.deb` from
 [GitHub Releases](https://github.com/samsaw123456/emberwood/releases/latest).
 Open the file with the system's package installer and choose Install. Emberwood
 then appears in the Applications launcher with its fox icon. Downloading a file
@@ -24,7 +24,7 @@ then provide `linux_release.x86_64` from the official
 python3 tools/build_linux_package.py --runtime /path/to/linux_release.x86_64
 ```
 
-Output is `dist/emberwood_1.2.0_amd64.deb` with `dist/SHA256SUMS`. The source
+Output is `dist/emberwood_1.2.1_amd64.deb` with `dist/SHA256SUMS`. The source
 checkout's launcher remains available in Zed. The package uses its own engine
 and exported resource pack under `/usr/lib/emberwood`, with a launcher under
 `/usr/games` and a system Applications entry. No download scripts run at install
@@ -48,4 +48,4 @@ filesystem. The development checkout and existing Godot installation were hidden
 only loopback networking was available. APT dependency simulation, desktop-file
 validation and Lintian passed. Lintian exceptions document the official Godot
 binary's bundled libraries, upstream executable format, and upstream changelog.
-See [current release evidence](../docs/MONSTERS.md) for playtest details and screenshots.
+See [current release evidence](../docs/MONSTER_ART.md) for playtest details and screenshots.

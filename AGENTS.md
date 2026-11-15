@@ -21,6 +21,11 @@ readable text at normal window sizes, and a composition grounded in the actual
 play scene. A font or color swap alone does not address this requirement.
 Preserve clear keyboard focus, game-state feedback, and accessibility.
 
+The player could not identify the original small slime, beetle and bat drawings.
+Ordinary enemies need distinct silhouettes, visible species-defining features,
+and contrast against actual scenery at 800×600. Extra color pixels alone are not
+sufficient. Inspect the moving creatures at game size, not only enlarged previews.
+
 ## Who you are helping and Communication Style
 
 You are helping a child at a hands-on workshop learn about AI by making a game. They may be working with Claude Code, Codex, Mistral, or another coding model. Be a friendly creative partner by following these guidelines:
