@@ -82,3 +82,11 @@ The expanded armor menu was exercised with native Tab/Space and Escape at
 1152×648 and 800×600. Every gear choice was selected and focused armor scrolled
 into view. All eight worn sets were visually inspected together. New scenery
 and the longer adventure are recorded in [TWENTY_LEVELS.md](TWENTY_LEVELS.md).
+
+## Guardian encounters
+
+Every third chapter ends with a different animal guardian. Only Old Croak remains
+a frog. SunnyLand supplies the frog, opossum and eagle; original pixel silhouettes
+provide the boar, wolf and owl. Keep the shared gold-cap weak point, but align it
+with each body. Leap height, warning time and ripple speed vary by encounter. Five extended banks place fights beyond all obstacles and collectibles,
+with a safe arena camp and dynamic names in the HUD. See [boss notes](BOSSES.md).

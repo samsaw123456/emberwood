@@ -1,5 +1,8 @@
 > **Play Emberwood:** [Download the Linux installer](https://github.com/samsaw123456/emberwood/releases/latest). Install it once to add Emberwood to your Applications launcher, ready to play offline. See [installer details](packaging/README.md) or [game instructions](GAME.md). Developers can open [project.godot](project.godot) in Godot and press Play.
 
+Emberwood now has **20 levels, 6 animal bosses, 5 weapons, and 8 armor sets**.
+Meet a boss every third level: [guardian roster](docs/BOSSES.md).
+
 # START HERE: COPY THIS PROMPT
 
 > **Build a fun game using https://github.com/Tingsters/Phippy-Gaming-Workshop**

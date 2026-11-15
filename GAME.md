@@ -1,7 +1,7 @@
 # Emberwood — Forest Adventure
 
 Guide the fox through twenty levels, collect the acorns that open each trail,
-get past Old Croak, and return to the Heart of Emberwood beyond the riverlands
+get past six animal guardians, and return to the Heart of Emberwood beyond the riverlands
 and snowy mountains.
 
 | Chapter | Route |
@@ -11,19 +11,19 @@ and snowy mountains.
 | **3. High Canopy** | Follow the branches above the forest, then face Old Croak in his clearing. |
 | **4. Moss Caverns** | Explore rooted stone passages, cross shifting platforms, and find seed bombs. |
 | **5. Sunlit Ridge** | Climb the rocky pine trail, earn ironwood armor, and reach the summit. |
-| **6. Reedbank Trail** | Begin the riverlands and earn Reed mail. |
+| **6. Reedbank Trail** | Earn Reed mail, then face Reed Rumbler. |
 | **7. Willow Narrows** | Follow the route between the willows. |
 | **8. Broken Aqueduct** | Cross the old riverworks. |
-| **9. Heron Marsh** | Find a path across the marsh. |
+| **9. Heron Marsh** | Cross the marsh and face Marsh Tusk. |
 | **10. Riverwatch Falls** | Finish the riverlands crossing. |
 | **11. Frostpine Pass** | Enter the snowy mountains and earn Frost armor. |
-| **12. Snowmelt Gorge** | Traverse the mountain gorge. |
+| **12. Snowmelt Gorge** | Traverse the gorge and face Frost Fang. |
 | **13. Slate Heights** | Reach the high stone trail and earn Stoneplate. |
 | **14. Whitewater Steps** | Follow the stepping route through the mountains. |
-| **15. Cloudline Crossing** | Cross the last high pass. |
+| **15. Cloudline Crossing** | Cross the high pass and face Cloudwing. |
 | **16. Copperbark Woods** | Enter the ancient forest and earn Copperbark armor. |
 | **17. Rootbound Ruins** | Explore the overgrown stone route. |
-| **18. Lantern Hollow** | Follow the trail through the old hollow. |
+| **18. Lantern Hollow** | Follow the old hollow to Lantern Owl. |
 | **19. Sunleaf Crown** | Earn the final Sunleaf armor. |
 | **20. Heart of Emberwood** | Collect the final acorns and complete the adventure. |
 
@@ -95,7 +95,7 @@ press uses it once; ammunition is unlimited, with a short delay between uses.
 | **Sunleaf armor** | Sunleaf Crown, second campfire | Blocks eight hits. |
 
 Weapons stop at solid terrain; seed bursts cannot hit through walls. Armor blocks
-spikes, critters, or Old Croak, but cannot save you from a fall. A newly reached
+spikes, critters, or guardians, but cannot save you from a fall. A newly reached
 campfire or a retry repairs it. Revisiting an old camp or swapping armor does not
 erase damage already absorbed. The HUD shows the remaining blocks.
 
@@ -106,13 +106,15 @@ Gear and choices carry across retries and levels.
 A later checkpoint also awards earlier rewards you missed. Restarting the whole
 adventure clears equipment along with level progress.
 
-Old Croak marks where he will land before he leaps. Avoid the landing spot and
+A boss appears every third level: **3, 6, 9, 12, 15, and 18**. See the
+[guardian roster](docs/BOSSES.md): frog, opossum, boar, wolf, eagle, and owl.
+Each marks where it will land before leaping. Avoid the landing spot and
 jump over the ripples. When he rests and his cap turns gold, double-jump onto it.
 You can also **shoot him while he rests**. **Three hits**, one per opening, let
 you pass. The fox has **three hearts** during this encounter. Losing them before
-victory returns you to the nearby campfire and resets the fight, including Old
-Croak's health. Once defeated, he stays defeated through retries and falls, and
-the canopy gate stays open. Continue through it to Moss Caverns. Your collected
+victory returns you to the nearby campfire and resets the fight, including the
+guardian's health. Once defeated, he stays defeated through retries and falls, and
+the gate stays open. Continue through it to the next level. Your collected
 acorns and gems remain collected.
 
 Choose **Restart all chapters** in the pause menu to begin again from the forest.
@@ -143,7 +145,7 @@ No plugins or runtime network connection are required. The main scene is
 - [scripts/trails.gd](scripts/trails.gd): the fifteen later routes, assembled from
   curated traversal sections with shared placement data.
 - [scripts/platform.gd](scripts/platform.gd): solid, moving, and crumbling terrain.
-- [scripts/boss.gd](scripts/boss.gd): Old Croak's attack tells, leaps, ripples,
+- [scripts/boss.gd](scripts/boss.gd): the guardians' attack tells, leaps, ripples,
   vulnerable phase, and defeat.
 - [scripts/hud.gd](scripts/hud.gd): game menus, controls, and boss health display.
 - [scripts/forest_backdrop.gd](scripts/forest_backdrop.gd): region scenery and landmarks.
@@ -173,7 +175,7 @@ python3 tools/run_game_tests.py
 On this computer, `gdformat`, `gdlint`, and `ruff` are available in
 `~/.local/share/phippy-tools/venv/bin/`. Run the checks after changing movement,
 collisions, chapter flow, or the boss, then play the affected sections. The
-campaign best-time key is `game/twenty_chapter_best_time` in `user://emberwood.cfg`.
+campaign best-time key is `game/six_guardians_best_time` in `user://emberwood.cfg`.
 
 See [playtest notes](docs/PLAYTEST.md) for verification and screenshots, and
 [visual direction](docs/DESIGN.md) for the pixel title and readable game interface.

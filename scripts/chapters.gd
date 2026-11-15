@@ -24,7 +24,70 @@ const TITLES := [
 	"Sunleaf Crown",
 	"Heart of Emberwood"
 ]
-const CAMPAIGN_BEST_KEY := "twenty_chapter_best_time"
+const CAMPAIGN_BEST_KEY := "six_guardians_best_time"
+# One guardian every third chapter. Shared rules keep the gold-cap opening readable.
+const GUARDIANS := [
+	{
+		"name": "Old Croak",
+		"animal": &"frog",
+		"cap": "627545",
+		"warning": 1.1,
+		"leap": 0.82,
+		"height": 110.0,
+		"wave": 170.0,
+		"rest": 2.1
+	},
+	{
+		"name": "Reed Rumbler",
+		"animal": &"opossum",
+		"cap": "899b42",
+		"warning": 1.2,
+		"leap": 0.9,
+		"height": 130.0,
+		"wave": 185.0,
+		"rest": 2.2
+	},
+	{
+		"name": "Marsh Tusk",
+		"animal": &"boar",
+		"cap": "56898f",
+		"warning": 1.05,
+		"leap": 0.75,
+		"height": 100.0,
+		"wave": 200.0,
+		"rest": 2.1
+	},
+	{
+		"name": "Frost Fang",
+		"animal": &"wolf",
+		"cap": "8cabc4",
+		"warning": 1.2,
+		"leap": 1.0,
+		"height": 155.0,
+		"wave": 210.0,
+		"rest": 2.25
+	},
+	{
+		"name": "Cloudwing",
+		"animal": &"eagle",
+		"cap": "9694b4",
+		"warning": 1.1,
+		"leap": 0.95,
+		"height": 180.0,
+		"wave": 220.0,
+		"rest": 2.2
+	},
+	{
+		"name": "Lantern Owl",
+		"animal": &"owl",
+		"cap": "b8823f",
+		"warning": 1.0,
+		"leap": 0.85,
+		"height": 140.0,
+		"wave": 235.0,
+		"rest": 2.1
+	}
+]
 
 
 static func theme(index: int) -> StringName:
@@ -36,12 +99,30 @@ static func theme(index: int) -> StringName:
 
 
 static func has_boss(index: int) -> bool:
-	return index == 2
+	return index >= 0 and index < TITLES.size() and (index + 1) % 3 == 0
+
+
+static func guardian(index: int) -> Dictionary:
+	return GUARDIANS[index / 3] if has_boss(index) else {}
 
 
 static func layout(index: int) -> Dictionary:
 	if index >= 5 and index < TITLES.size():
-		return ForestTrails.layout(index, TITLES[index])
+		var data := ForestTrails.layout(index, TITLES[index])
+		if has_boss(index):
+			# Extend the existing last bank; keep every obstacle and reward before the fight.
+			data.width = 4100.0
+			data.ground[-1] = Vector2(2700, data.width)
+			data.gate = Vector2(3940, 536)
+			data.camps.append(Vector2(3060, 536))
+			data.signs.append(
+				[
+					Vector2(2960, 315),
+					guardian(index).name,
+					"Dodge the leap. Attack when the cap turns gold."
+				]
+			)
+		return data
 	match index:
 		1:
 			return _mill()
@@ -57,7 +138,7 @@ static func layout(index: int) -> Dictionary:
 
 static func route(index: int) -> Array:
 	if index >= 5 and index < TITLES.size():
-		return ForestTrails.layout(index, TITLES[index]).route
+		return layout(index).route
 	if index == 3:
 		return [
 			["walk", 300.0, 536.0],

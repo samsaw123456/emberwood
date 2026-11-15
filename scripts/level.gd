@@ -565,7 +565,7 @@ func _draw_gate() -> void:
 	)
 	var hint := "Continue the trail" if unlocked else "Find all 3 magic acorns"
 	if ForestChapters.has_boss(stage_index):
-		hint = "The hollow is open" if unlocked else "Collect 3 acorns and pass Old Croak"
+		hint = "The path is open" if unlocked else "Collect 3 acorns and defeat the guardian"
 	elif stage_index == ForestChapters.TITLES.size() - 1 and unlocked:
 		hint = "The heartwood awaits"
 	draw_string(

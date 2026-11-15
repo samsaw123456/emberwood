@@ -312,7 +312,10 @@ func _test_later_chapters() -> void:
 	for chapter in range(3, ForestChapters.TITLES.size()):
 		_press_button("Continue")
 		_check(game.stage_index == chapter, "Continue reaches the correct expanded chapter.")
-		_check(not is_instance_valid(game.boss), "Old Croak stays in High Canopy.")
+		_check(
+			is_instance_valid(game.boss) == ForestChapters.has_boss(chapter),
+			"Every third chapter has a guardian."
+		)
 		_check(game.level.taken_acorns.is_empty(), "Expanded chapters begin with fresh acorns.")
 		await _step(3)
 		_check(
@@ -323,6 +326,12 @@ func _test_later_chapters() -> void:
 		await _step(3)
 		_check(game.state == Adventure.State.PLAYING, "New gates still require all three acorns.")
 		await _collect_acorns()
+		if is_instance_valid(game.boss):
+			game.fox.reset_at(game.level.camps[-1])
+			await _step(3)
+			for hit in 3:
+				game.boss.phase = "rest"
+				game.boss.arrow_hit()
 		game.fox.reset_at(game.level.gate)
 		await _step(3)
 		var expected := (

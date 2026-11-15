@@ -122,7 +122,7 @@ func _load_chapter(index: int) -> void:
 	shot_cooldown = 0.0
 	if ForestChapters.has_boss(index):
 		boss = ForestBoss.new()
-		boss.position = Vector2(2970, ForestLevel.FLOOR_Y)
+		boss.configure(index)
 		boss.fox = fox
 		level.add_child(boss)
 		boss.player_hit.connect(_on_boss_hit)
@@ -332,7 +332,9 @@ func _check_camps_and_gate() -> void:
 			while missing < level.acorns.size() and level.taken_acorns.has(missing):
 				missing += 1
 			if missing == level.acorns.size():
-				hud.toast("Old Croak guards this gate. Jump on his cap when he rests.")
+				hud.toast(
+					"%s guards this gate. Attack the gold cap during rest." % boss.guardian_name
+				)
 			else:
 				hud.toast("Acorn %d is still on the trail to the left." % (missing + 1))
 
@@ -412,11 +414,17 @@ func _burst(pos: Vector2, color: Color, count: int) -> void:
 
 func _draw() -> void:
 	if is_instance_valid(arena_wall):
+		var wall_x := boss.arena_min - 100
 		for offset in [0, 8, 16]:
-			draw_line(Vector2(2500 + offset, 536), Vector2(2500 + offset, 250), Color("6a7653"), 5)
+			draw_line(
+				Vector2(wall_x + offset, 536), Vector2(wall_x + offset, 250), Color("6a7653"), 5
+			)
 			for y in range(270, 530, 38):
 				draw_line(
-					Vector2(2500 + offset, y), Vector2(2484 + offset, y - 18), Color("a4b979"), 5
+					Vector2(wall_x + offset, y),
+					Vector2(wall_x - 16 + offset, y - 18),
+					Color("a4b979"),
+					5
 				)
 	for particle in particles:
 		var color: Color = particle.color
@@ -513,20 +521,24 @@ func _update_boss_encounter() -> void:
 	if (
 		not boss_started
 		and not boss.defeated
-		and fox.position.x >= 2630
-		and level.taken_acorns.size() == 3
+		and fox.position.x >= boss.arena_min + 30
+		and level.taken_acorns.size() == level.required_acorns
 	):
 		boss_started = true
 		player_health = 3
 		_activate_camp(level.camps.size() - 1)
 		arena_wall = ForestPlatform.new()
-		arena_wall.setup(Rect2(2500, 250, 18, 286), "wall")
+		arena_wall.setup(Rect2(boss.arena_min - 100, 250, 18, 286), "wall")
 		level.add_child(arena_wall)
 		boss.begin()
 		sound.play("camp")
-		hud.toast("Old Croak: dodge the landing mark, then jump on his resting head.")
+		hud.toast("%s: dodge the landing mark, then attack the gold cap." % boss.guardian_name)
 	hud.update_boss(
-		boss_started and not boss.defeated, boss.health, player_health, boss.status_text()
+		boss_started and not boss.defeated,
+		boss.health,
+		player_health,
+		boss.status_text(),
+		boss.guardian_name
 	)
 
 
@@ -536,7 +548,7 @@ func _on_boss_hit() -> void:
 	if _absorb_hit():
 		return
 	player_health -= 1
-	hud.update_boss(true, boss.health, player_health, boss.status_text())
+	hud.update_boss(true, boss.health, player_health, boss.status_text(), boss.guardian_name)
 	if player_health <= 0:
 		_respawn("Back to the arena campfire. Watch the landing mark before you jump.")
 		return
@@ -547,7 +559,7 @@ func _on_boss_hit() -> void:
 
 
 func _on_boss_damaged(_remaining: int) -> void:
-	hud.update_boss(true, boss.health, player_health, boss.status_text())
+	hud.update_boss(true, boss.health, player_health, boss.status_text(), boss.guardian_name)
 	sound.play("acorn")
 	_burst(boss.position - Vector2(0, 70), Color("d7c277"), 20)
 
@@ -558,7 +570,7 @@ func _on_boss_defeated() -> void:
 		arena_wall.queue_free()
 		arena_wall = null
 	sound.play("win")
-	hud.toast("Old Croak yields the path. The gate is just ahead.")
+	hud.toast("%s yields the path. The gate is just ahead." % boss.guardian_name)
 	hud.update_boss(false, 0, player_health, "")
 
 

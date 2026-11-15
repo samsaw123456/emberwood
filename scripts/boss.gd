@@ -1,12 +1,13 @@
 class_name ForestBoss
 extends Node2D
-## Old Croak marks a landing spot, leaps, then exposes his leaf cap while resting.
+## Forest guardians mark a landing, leap, then expose their caps while resting.
 ## The game owns the fox's health; this encounter only reports damaging contact.
 
 signal player_hit
 signal damaged(remaining: int)
 signal defeated_boss
 
+const GuardianArt := preload("res://scripts/guardian_art.gd")
 const MAX_HEALTH := 3
 const FLOOR_Y := 536.0
 const LEAP_HEIGHT := 110.0
@@ -19,6 +20,17 @@ const IDLE := preload("res://assets/pixel/animals/sunnyland/frog-idle-sheet.png"
 const JUMP_UP := preload("res://assets/pixel/animals/sunnyland/frog-jump-frame-01.png")
 const JUMP_DOWN := preload("res://assets/pixel/animals/sunnyland/frog-jump-frame-02.png")
 
+var guardian_name := "Old Croak"
+var species: StringName = &"frog"
+var body_size := BODY_SIZE
+var cap_height := -79.0
+var cap_color := Color("627545")
+var warning_duration := 1.1
+var leap_duration := LEAP_DURATION
+var leap_height := LEAP_HEIGHT
+var wave_speed := 170.0
+var rest_duration := 2.1
+var crown_points := 0
 var fox: ForestFox
 var active := false
 var engaged := false
@@ -37,6 +49,26 @@ var _leap_start := Vector2.ZERO
 var _animation_time := 0.0
 var _contact_cooldown := 0.0
 var _facing_left := true
+
+
+func configure(chapter: int) -> void:
+	var profile := ForestChapters.guardian(chapter)
+	guardian_name = profile.name
+	species = profile.animal
+	if species == &"opossum":
+		body_size = Vector2(88, 56)
+		cap_height = -61.0
+	cap_color = Color(profile.cap)
+	warning_duration = profile.warning
+	leap_duration = profile.leap
+	leap_height = profile.height
+	wave_speed = profile.wave
+	rest_duration = profile.rest
+	crown_points = chapter / 3
+	if chapter > 2:
+		arena_min = 3000.0
+		arena_max = 3800.0
+	position = Vector2(arena_min + 370, FLOOR_Y)
 
 
 func _ready() -> void:
@@ -79,8 +111,8 @@ func status_text() -> String:
 		"hurt":
 			return "He's getting his breath back."
 		"defeated":
-			return "Old Croak has yielded. The path is open."
-	return "Old Croak guards the hollow."
+			return "%s has yielded. The path is open." % guardian_name
+	return "%s guards the clearing." % guardian_name
 
 
 func _physics_process(delta: float) -> void:
@@ -98,14 +130,14 @@ func _physics_process(delta: float) -> void:
 func _advance_phase() -> void:
 	match phase:
 		"warning":
-			if phase_time >= 1.1 - (MAX_HEALTH - health) * 0.1:
+			if phase_time >= warning_duration - (MAX_HEALTH - health) * 0.1:
 				_leap_start = global_position
 				_set_phase("leap")
 		"leap":
-			var progress := minf(phase_time / LEAP_DURATION, 1.0)
+			var progress := minf(phase_time / leap_duration, 1.0)
 			global_position = Vector2(
 				lerpf(_leap_start.x, landing_x, progress),
-				FLOOR_Y - sin(progress * PI) * LEAP_HEIGHT
+				FLOOR_Y - sin(progress * PI) * leap_height
 			)
 			if progress >= 1.0:
 				_land()
@@ -113,7 +145,7 @@ func _advance_phase() -> void:
 			if phase_time >= 0.28:
 				_set_phase("rest")
 		"rest":
-			if phase_time >= 2.1:
+			if phase_time >= rest_duration:
 				_warn()
 		"hurt":
 			if phase_time >= 0.65:
@@ -136,7 +168,7 @@ func _set_phase(next: String) -> void:
 func _land() -> void:
 	global_position = Vector2(landing_x, FLOOR_Y)
 	_set_phase("landing")
-	var speed := 170.0 + (MAX_HEALTH - health) * 25.0
+	var speed := wave_speed + (MAX_HEALTH - health) * 25.0
 	for direction in [-1, 1]:
 		waves.append({"x": landing_x + direction * 46, "speed": speed * direction})
 
@@ -177,7 +209,7 @@ func _take_stomp() -> void:
 
 
 func body_bounds() -> Rect2:
-	return Rect2(global_position - Vector2(BODY_SIZE.x / 2, BODY_SIZE.y), BODY_SIZE)
+	return Rect2(global_position - Vector2(body_size.x / 2, body_size.y), body_size)
 
 
 func cap_bounds() -> Rect2:
@@ -233,13 +265,13 @@ func _take_hit() -> void:
 
 func _draw() -> void:
 	_draw_ground_marks()
-	_draw_frog()
+	_draw_guardian()
 	_draw_cap()
 	if phase == "rest":
 		# Two amber chevrons identify the weak point even without sound or animation.
 		var bob := 0.0 if reduced_motion else sin(_animation_time * 5) * 3
 		for side in [-1, 1]:
-			var point := Vector2(side * 32, -95 + bob)
+			var point := Vector2(side * 32, _cap_y() - 16 + bob)
 			draw_line(point + Vector2(-4, -4), point, Color("ffe29b"), 3)
 			draw_line(point + Vector2(4, -4), point, Color("ffe29b"), 3)
 
@@ -271,6 +303,18 @@ func _draw_ground_marks() -> void:
 		draw_line(point + Vector2(-19, 0), point + Vector2(18, 0), Color("799b8b"), 3)
 
 
+func _draw_guardian() -> void:
+	if species == &"frog":
+		_draw_frog()
+		return
+	var tint := Color("efd7ad") if phase == "hurt" else Color.WHITE
+	if defeated:
+		tint = Color("b4c9b4")
+	GuardianArt.draw_animal(
+		self, species, _animation_time, phase, _facing_left, tint, defeated or reduced_motion
+	)
+
+
 func _draw_frog() -> void:
 	var rect := Rect2(-70, -108, 140, 128)
 	var tint := Color.WHITE
@@ -286,8 +330,8 @@ func _draw_frog() -> void:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2(-1, 1))
 	if phase == "leap":
 		rect.position.y = -128
-		var image := JUMP_UP if phase_time < LEAP_DURATION / 2 else JUMP_DOWN
-		draw_texture_rect(image, rect, false)
+		var image := JUMP_UP if phase_time < leap_duration / 2 else JUMP_DOWN
+		draw_texture_rect(image, rect, false, tint)
 	else:
 		var frame := int(_animation_time * 5) % 4 if not defeated else 0
 		draw_texture_rect_region(IDLE, rect, Rect2(frame * 35, 0, 35, 32), tint)
@@ -295,20 +339,25 @@ func _draw_frog() -> void:
 
 
 func _cap_y() -> float:
-	var y := -79.0
-	if phase == "leap":
-		y = -111.0
+	var y := cap_height
+	if phase == "leap" and species == &"frog":
+		y -= 32
 	elif phase == "warning":
-		y = -72.0
+		y += 7
 	elif defeated:
-		y = -65.0
+		y += 14
 	return y
 
 
 func _draw_cap() -> void:
 	var y := _cap_y()
-	var leaf := Color("b9aa68") if phase == "rest" else Color("627545")
+	var leaf := Color("b9aa68") if phase == "rest" else cap_color
 	var stem := Color("766442")
+	# Small reed/crystal tips distinguish later guardians without changing the hitbox.
+	for point in crown_points:
+		var x := (point - (crown_points - 1) / 2.0) * 9
+		draw_line(Vector2(x, y + 2), Vector2(x, y - 10), leaf, 3)
+		draw_rect(Rect2(x - 2, y - 12, 4, 4), Color("ffe29b"))
 	for side in [-1, 1]:
 		draw_colored_polygon(
 			PackedVector2Array(

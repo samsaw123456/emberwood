@@ -1,5 +1,5 @@
 extends "res://tests/test_route.gd"
-## Complete all chapters and Old Croak using movement, jumping and menu inputs only.
+## Complete all chapters and all six guardians using movement, jumping and menu inputs only.
 
 
 func _run() -> void:
@@ -25,7 +25,7 @@ func _run() -> void:
 		return
 	print(
 		(
-			"PASS: full %d-level campaign and Old Croak, inputs only. Time "
+			"PASS: full %d-level campaign and all six guardians, inputs only. Time "
 			% ForestChapters.TITLES.size()
 		),
 		game.format_time(game.elapsed),
@@ -77,12 +77,12 @@ func _finish_boss_chapter() -> bool:
 
 
 func _fight_boss() -> bool:
-	if not await _walk_to(2660):
+	if not await _walk_to(game.boss.arena_min + 60):
 		_fail("The boss camp could not be reached.")
 		return false
 	var previous_phase := ""
 	var jump_frame := -1
-	var escape_x := 2900.0
+	var escape_x: float = game.boss.arena_min + 300
 	for frame in 2400:
 		if game.boss.defeated:
 			_release()
@@ -92,7 +92,10 @@ func _fight_boss() -> bool:
 			return false
 		if game.boss.phase != previous_phase:
 			if game.boss.phase == "warning":
-				escape_x = game.boss.landing_x + (210 if game.boss.landing_x < 3000 else -210)
+				escape_x = (
+					game.boss.landing_x
+					+ (210 if game.boss.landing_x < game.boss.arena_min + 400 else -210)
+				)
 			elif game.boss.phase == "rest":
 				Input.action_release(&"jump")
 				jump_frame = frame + 1

@@ -1,4 +1,4 @@
-extends "res://tests/test_route.gd"
+extends "res://tests/test_campaign.gd"
 ## Every new trail is played from its entrance using movement and jump input.
 
 
@@ -42,12 +42,14 @@ func _play_trail(chapter: int) -> bool:
 	if not await _follow_route(ForestChapters.route(chapter)):
 		return false
 	_release()
+	if ForestChapters.has_boss(chapter) and not await _finish_boss_chapter():
+		return false
 	await _step(3)
 	var expected: int = game.State.WON if chapter == 19 else game.State.CHAPTER_COMPLETE
 	if game.state != expected or game.level.taken_acorns.size() != 3:
 		_fail("The trail did not reach its gate with all three acorns.")
 		return false
-	if not game.level.secret_found or game.level.camp_index != 3:
+	if not game.level.secret_found or game.level.camp_index != game.level.camps.size() - 1:
 		_fail("The trail missed its hidden firefly or a safe checkpoint.")
 		return false
 	if game.deaths != 0:

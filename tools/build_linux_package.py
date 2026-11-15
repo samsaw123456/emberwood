@@ -10,7 +10,7 @@ from pathlib import Path
 
 from install_app import desktop_entry
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -99,7 +99,7 @@ def main() -> None:
         )
         (documentation / "changelog.gz").write_bytes(
             gzip.compress(
-                f"Emberwood {VERSION}: first offline Linux installer.\n".encode(),
+                f"Emberwood {VERSION}: six guardians, one every third level.\n".encode(),
                 mtime=0,
             )
         )
@@ -141,7 +141,7 @@ def main() -> None:
             "Homepage: https://github.com/samsaw123456/emberwood\n"
             "Description: Forest platform adventure with twenty levels\n"
             " Guide the fox through twenty trails, earn weapons and armor, and face\n"
-            " Old Croak. Includes the game engine and plays offline.\n",
+            " six animal guardians. Includes the game engine and plays offline.\n",
         )
         for entry in stage.rglob("*"):
             entry.chmod(

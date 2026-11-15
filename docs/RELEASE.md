@@ -1,3 +1,5 @@
+> Previous release: v1.0.0. See [six guardians](BOSSES.md) for v1.1.0.
+
 # Weapons and downloadable app
 
 Scope: five weapons, eight armor sets, twenty levels, and an offline Linux package

@@ -4,10 +4,12 @@
 # Also available offline in the Applications menu with its fox-and-forest icon.
 # Install that shortcut with: python3 tools/install_app.py
 # Shareable Linux installer: GitHub Releases (includes the offline game engine).
-# Current adventure: 20 levels, 5 weapons, and 8 armor sets.
+# Current adventure: 20 levels, 6 bosses, 5 weapons, and 8 armor sets.
+# Frog, opossum, boar, wolf, eagle, and owl — a boss every third level.
+# Boss tip: dodge the leap, then attack the gold cap.
 # New rewards: Thorn fan in Willow Narrows; Sunwood lance in Rootbound Ruins.
 # New trails cross riverlands, frostpine mountains, and the ancient forest.
-# Playtest results and screenshots: docs/TWENTY_LEVELS.md
+# Playtest results and screenshots: docs/BOSSES.md
 # Controls: A/D move, Space jump twice, Shift dash, J weapon, Esc gear, R retry.
 set -eu
 

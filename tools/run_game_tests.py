@@ -11,6 +11,7 @@ SUITES = (
     "fox",
     "platform",
     "boss",
+    "guardians",
     "arrow",
     "game",
     "equipment",

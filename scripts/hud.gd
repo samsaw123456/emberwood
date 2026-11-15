@@ -260,11 +260,18 @@ func update_stats(
 	_jump_label.text = "Air jump ready" if jumps > 0 else "Land to jump again"
 
 
-func update_boss(show_boss: bool, boss_health: int, player_health: int, hint: String) -> void:
+func update_boss(
+	show_boss: bool,
+	boss_health: int,
+	player_health: int,
+	hint: String,
+	guardian_name := "Old Croak"
+) -> void:
 	_boss_requested = show_boss
 	_boss_band.visible = show_boss and not _overlay.visible
 	_boss_count.text = (
-		"Old Croak  %s    FOX  %s" % [_health_marks(boss_health), _health_marks(player_health)]
+		"%s  %s    FOX  %s"
+		% [guardian_name, _health_marks(boss_health), _health_marks(player_health)]
 	)
 	_boss_hint.text = hint
 
