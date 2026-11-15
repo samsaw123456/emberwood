@@ -7,12 +7,12 @@
 # Current adventure: 20 levels, 6 bosses, 5 weapons, and 8 armor sets.
 # Frog, opossum, boar, wolf, eagle, and owl — a boss every third level.
 # Boss tip: dodge the leap, then attack the gold cap.
-# New discoveries: dash-open treasure chests, leaf shields, and a gem-fetching firefly friend.
+# Gameplay restored: treasure chests, bonus leaf shields, and the companion removed.
 # Clearer monster art: glossy jelly, six beetle legs, and broad flapping bat wings.
 # Regular monsters: opossums, hopping moss slimes, bramble beetles, and cave bats.
 # New rewards: Thorn fan in Willow Narrows; Sunwood lance in Rootbound Ruins.
 # New trails cross riverlands, frostpine mountains, and the ancient forest.
-# Playtest results and screenshots: docs/DISCOVERIES.md
+# Playtest results and screenshots: docs/RESTORED_GAMEPLAY.md
 # Controls: A/D move, Space jump twice, Shift dash, J weapon, Esc gear, R retry.
 set -eu
 

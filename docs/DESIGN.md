@@ -98,12 +98,3 @@ and antennae, and the bat scalloped flapping wings, tall ears and fangs. Use bri
 highlights and dark edges against actual scenery. Check all three at 800×600;
 labels or a few extra colored pixels cannot substitute for recognizable shapes.
 See [monster artwork](MONSTER_ART.md) for current screenshots and playtests.
-
-## Discoveries
-
-Dash chests use small wooden boxes with brass bands and an open lid after use.
-A nearby Shift prompt explains their interaction. A leaf crest beside the fox
-shows the one-hit shield without covering worn armor. The rescued firefly has
-a yellow abdomen, pale wings and a trailing flight path. Two short status texts
-share the unused right side of the controls footer, clear of boss hints. Gentle
-motion removes companion bob/flapping. See [discovery checks](DISCOVERIES.md).

@@ -30,19 +30,6 @@ and snowy mountains.
 Each level has **3 required acorns** and a hidden firefly. There are **60 acorns,
 378 optional gems, and 20 hidden fireflies** across the complete adventure.
 
-## Treasure and a firefly friend
-
-Each trail has a treasure chest. Face it and press **Shift** to dash through it:
-it gives a **leaf shield** that blocks one hit before your armor is used. A small
-leaf beside the fox and a status in the bottom-right corner show it is ready.
-The shield is lost on retry or when leaving the trail, and an opened chest stays
-open. It does not protect against falls.
-
-Find any hidden firefly to gain a **firefly friend**. It follows you and collects
-nearby gems with a clear path to the fox. It cannot pull treasure through walls
-or collect acorns for you. Your friend stays through retries and later levels
-until you restart the adventure or close the game.
-
 ## Regular monsters
 
 Fight **opossums, moss slimes, bramble beetles, and cave bats** throughout the

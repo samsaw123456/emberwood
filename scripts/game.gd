@@ -36,7 +36,6 @@ var last_zone := ""
 var equipment := ForestEquipment.new()
 var arrows: Node2D
 var shot_cooldown := 0.0
-var finds: ForestFinds
 
 
 func _ready() -> void:
@@ -49,10 +48,6 @@ func _ready() -> void:
 	fox.jumped.connect(_on_jump)
 	fox.dashed.connect(func() -> void: sound.play("dash"))
 	fox.shot_requested.connect(_shoot)
-	finds = ForestFinds.new()
-	finds.fox = fox
-	finds.z_index = 11
-	add_child(finds)
 	camera = Camera2D.new()
 	camera.position = Vector2(VIEW_WIDTH / 2, 324)
 	add_child(camera)
@@ -98,7 +93,6 @@ func _notification(what: int) -> void:
 func start_run() -> void:
 	chapter_results.clear()
 	equipment.reset()
-	finds.companion = false
 	elapsed = 0.0
 	deaths = 0
 	_load_chapter(0)
@@ -145,7 +139,6 @@ func _load_chapter(index: int) -> void:
 	gate_hint_cooldown = 0.0
 	particles.clear()
 	fox.reset_at(level.camps[0])
-	finds.start_chapter(index)
 	_sync_equipment()
 	camera_x = 0.0
 	last_zone = ""
@@ -225,11 +218,6 @@ func _physics_process(delta: float) -> void:
 		fox.modulate.a = (
 			0.75 if reduced_motion else (0.65 if int(invincible_left * 10) % 2 else 1.0)
 		)
-	finds.advance(delta, reduced_motion)
-	if finds.try_open():
-		_burst(finds.chest - Vector2(0, 20), Color("f4d898"), 24)
-		sound.play("acorn")
-		hud.toast("Treasure! A leaf shield blocks one hit. Falls still send you back to camp.")
 	_check_hazards()
 	if state != State.PLAYING:
 		return
@@ -289,10 +277,7 @@ func _check_hazards() -> void:
 func _check_pickups() -> void:
 	var bounds := fox.body_bounds().grow(9)
 	for index in level.gems.size():
-		if (
-			not level.taken_gems.has(index)
-			and (bounds.has_point(level.gems[index]) or finds.can_fetch(level.gems[index]))
-		):
+		if not level.taken_gems.has(index) and bounds.has_point(level.gems[index]):
 			level.taken_gems[index] = true
 			_burst(level.gems[index], Color("b1f0dc"), 9)
 			sound.play("gem")
@@ -313,9 +298,7 @@ func _check_pickups() -> void:
 		level.secret_found = true
 		_burst(level.secret, Color("ffeda3"), 28)
 		sound.play("acorn")
-		finds.companion = true
-		finds.snap_to_fox()
-		hud.toast("Firefly friend! It gathers nearby gems and stays for this adventure.")
+		hud.toast("A hidden firefly! You found the forest's little secret.")
 
 
 func _check_platforms() -> void:
@@ -383,8 +366,6 @@ func _finish_respawn() -> void:
 			arena_wall.queue_free()
 			arena_wall = null
 	fox.reset_at(level.camps[level.camp_index])
-	finds.leaf_shield = false
-	finds.snap_to_fox()
 	equipment.recharge()
 	_sync_equipment()
 	shot_cooldown = 0.0
@@ -464,7 +445,6 @@ func _refresh_hud() -> void:
 		fox.jumps_left
 	)
 	hud.update_equipment(equipment, fox.can_dash())
-	hud.update_finds(finds.leaf_shield, finds.companion)
 
 
 func format_time(seconds: float) -> String:
@@ -645,16 +625,9 @@ func _sync_equipment() -> void:
 	fox.armor_charged = equipment.armor_charge > 0
 	fox.queue_redraw()
 	hud.update_equipment(equipment, fox.can_dash())
-	hud.update_finds(finds.leaf_shield, finds.companion)
 
 
 func _absorb_hit() -> bool:
-	if finds.absorb_hit():
-		invincible_left = 1.3
-		sound.play("armor")
-		_burst(fox.position - Vector2(0, 24), Color("c8e590"), 12)
-		hud.toast("Your leaf shield blocked the hit!")
-		return true
 	if not equipment.absorb_hit():
 		return false
 	invincible_left = 1.3

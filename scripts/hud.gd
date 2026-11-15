@@ -42,7 +42,6 @@ var _zone_label: Label
 var _jump_label: Label
 var _chapter_label: Label
 var _equipment_label: Label
-var _finds_label: Label
 var _equipment: ForestEquipment
 var _equipment_toggles: Dictionary = {}
 var _equipment_details: Dictionary = {}
@@ -157,15 +156,6 @@ func update_equipment(equipment: ForestEquipment, dash_ready: bool) -> void:
 		armor_text = "Armor: off"
 	_equipment_label.text = "%s    %s    %s" % [dash_text, weapon_text, armor_text]
 	_sync_equipment_rows()
-
-
-func update_finds(shield: bool, companion: bool) -> void:
-	var parts := PackedStringArray()
-	if shield:
-		parts.append("Leaf shield: 1 hit")
-	if companion:
-		parts.append("Firefly friend")
-	_finds_label.text = "   ·   ".join(parts)
 
 
 func show_stage_complete(
@@ -302,11 +292,6 @@ func _build_footer() -> void:
 	var options := _label("R: retry from campfire    Esc: gear / pause    M: sound", 16, QUIET_TEXT)
 	options.position = Vector2(24, 33)
 	_footer.add_child(options)
-	_finds_label = _label("", 15, TEXT)
-	_finds_label.position = Vector2(720, 33)
-	_finds_label.size.x = 408
-	_finds_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_footer.add_child(_finds_label)
 	_jump_label = _label("Air jump ready", 16, QUIET_TEXT)
 	_jump_label.position = Vector2(920, 7)
 	_jump_label.size.x = 208
