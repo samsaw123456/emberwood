@@ -12,6 +12,9 @@ const FLOOR_Y := 536.0
 const LEAP_HEIGHT := 110.0
 const LEAP_DURATION := 0.82
 const BODY_SIZE := Vector2(88, 72)
+const CAP_HALF_WIDTH := 37.0
+const CAP_TOP := -13.0
+const CAP_BOTTOM := 13.0
 const IDLE := preload("res://assets/pixel/animals/sunnyland/frog-idle-sheet.png")
 const JUMP_UP := preload("res://assets/pixel/animals/sunnyland/frog-jump-frame-01.png")
 const JUMP_DOWN := preload("res://assets/pixel/animals/sunnyland/frog-jump-frame-02.png")
@@ -72,7 +75,7 @@ func status_text() -> String:
 		"leap", "landing":
 			return "Jump over the ripples."
 		"rest":
-			return "His cap is open. Stomp him or shoot an arrow!"
+			return "Gold cap: double-jump onto it, or shoot!"
 		"hurt":
 			return "He's getting his breath back."
 		"defeated":
@@ -88,7 +91,7 @@ func _physics_process(delta: float) -> void:
 	_contact_cooldown = maxf(0, _contact_cooldown - delta)
 	_advance_phase()
 	_update_waves(delta)
-	_check_contact()
+	_check_contact(delta)
 	queue_redraw()
 
 
@@ -146,16 +149,14 @@ func _update_waves(delta: float) -> void:
 	)
 
 
-func _check_contact() -> void:
+func _check_contact(delta: float) -> void:
 	if not is_instance_valid(fox) or not fox.active or fox.global_position.y > FLOOR_Y + 30:
 		return
 	var bounds := fox.body_bounds()
 	var body := body_bounds()
-	if phase == "rest" and bounds.intersects(body.grow(6)):
-		var above_head := fox.global_position.y <= body.position.y + 26
-		if fox.velocity.y > 30 and above_head:
-			_take_stomp()
-			return
+	if phase == "rest" and _crossed_cap(delta):
+		_take_stomp()
+		return
 	if _contact_cooldown > 0:
 		return
 	if phase != "hurt" and bounds.intersects(body.grow(-4)):
@@ -171,13 +172,42 @@ func _check_contact() -> void:
 
 
 func _take_stomp() -> void:
-	fox.velocity.y = -560
-	fox.jumps_left = 1
+	fox.bounce(-560)
 	_take_hit()
 
 
 func body_bounds() -> Rect2:
 	return Rect2(global_position - Vector2(BODY_SIZE.x / 2, BODY_SIZE.y), BODY_SIZE)
+
+
+func cap_bounds() -> Rect2:
+	return Rect2(
+		global_position + Vector2(-CAP_HALF_WIDTH, _cap_y() + CAP_TOP),
+		Vector2(CAP_HALF_WIDTH * 2, CAP_BOTTOM - CAP_TOP)
+	)
+
+
+func projectile_bounds() -> Array[Rect2]:
+	return [body_bounds(), cap_bounds()]
+
+
+func _crossed_cap(delta: float) -> bool:
+	if fox.velocity.y <= 30:
+		return false
+	var cap := cap_bounds()
+	var previous_feet := fox.global_position - fox.velocity * delta
+	# The cap is the target shown to the player. Crossing its top from above
+	# counts immediately, before the feet sink into the body. Side entries do not.
+	if previous_feet.y > cap.position.y + 3 or fox.global_position.y < cap.position.y:
+		return false
+	var progress := clampf(
+		(cap.position.y - previous_feet.y) / (fox.global_position.y - previous_feet.y), 0, 1
+	)
+	var crossing_x := lerpf(previous_feet.x, fox.global_position.x, progress)
+	return (
+		crossing_x + ForestFox.BODY_SIZE.x / 2 > cap.position.x
+		and crossing_x - ForestFox.BODY_SIZE.x / 2 < cap.end.x
+	)
 
 
 func arrow_hit() -> bool:
@@ -264,7 +294,7 @@ func _draw_frog() -> void:
 	draw_set_transform(Vector2.ZERO)
 
 
-func _draw_cap() -> void:
+func _cap_y() -> float:
 	var y := -79.0
 	if phase == "leap":
 		y = -111.0
@@ -272,6 +302,11 @@ func _draw_cap() -> void:
 		y = -72.0
 	elif defeated:
 		y = -65.0
+	return y
+
+
+func _draw_cap() -> void:
+	var y := _cap_y()
 	var leaf := Color("b9aa68") if phase == "rest" else Color("627545")
 	var stem := Color("766442")
 	for side in [-1, 1]:
@@ -280,7 +315,7 @@ func _draw_cap() -> void:
 				[
 					Vector2(0, y + 7),
 					Vector2(side * 24, y + 2),
-					Vector2(side * 37, y - 13),
+					Vector2(side * CAP_HALF_WIDTH, y + CAP_TOP),
 					Vector2(side * 10, y - 8)
 				]
 			),

@@ -26,7 +26,9 @@ saved data through [the runner](../tools/run_game_tests.py).
   recovery time; falls still cause retries. A new camp or retry recharges armor;
   returning to an old camp or reequipping does not. Old Croak takes one arrow
   or falling stomp per resting phase. Three hits defeat him. Guarded phases
-  reject arrows, and stomps retain their bounce.
+  reject arrows, including shots through the visible cap. Stomps cross the cap
+  from above, and protection does not disable critter attacks. External bounces
+  interrupt dashes, leave one air jump, and ignore release of an earlier jump.
 - **Navigation:** all required acorns and gates are reachable through movement
   input. Campfires mark safe retry positions. The boss arena closes only when
   its acorns are collected, and reopens on defeat. Camera bounds follow the
@@ -34,7 +36,9 @@ saved data through [the runner](../tools/run_game_tests.py).
 - **State:** title, playing, paused, retrying, chapter complete, and won. Pause
   and focus loss freeze physics, dash/shot cooldowns, arrows, and boss attacks.
   Returning focus requires explicit resume. Retries preserve equipment choices
-  and restore armor. Chapters preserve choices and remove old projectiles.
+  and restore armor. A defeated boss and its open gate survive retries and
+  falls; an unfinished fight resets. Chapters preserve choices and remove old
+  projectiles.
   Replay resets rewards, counters, level entities, and temporary combat state.
 - **Feel and accessibility:** visible keyboard focus, native buttons/toggles,
   readable controls, sound/gentle-motion settings, forgiving collision margins,
@@ -69,11 +73,41 @@ git diff --check
 ```
 
 The runner includes `fox`, `platform`, `boss`, `arrow`, `game`, `equipment`,
-`route`, and `campaign`. Pass suite names to run a subset. All eight suites
-passed. The game integration suite passed **166 checks**; equipment passed
-**83 checks** after correcting simultaneous turn-and-shoot input. Controller,
-platform, boss, projectile, original-route, and full-campaign tests also passed.
+`interactions`, `route`, and `campaign`. Pass suite names to run a subset. All
+nine suites passed across the final focused runs. The game integration suite
+passed **201 checks**; equipment passed **83 checks**; full-scene interactions
+passed **30 checks**. Controller, platform, boss, projectile, original-route,
+and full-campaign tests also passed. The arrow test's flight timing now waits
+only on physics ticks, avoiding extra ticks from a delayed render frame.
 Formatting, lint, shell syntax, resource import, and documentation links passed.
+
+## Boss audit verification
+
+The [combat and progression audit](AUDIT.md) records the reproduced faults and
+their fixes. After those changes, a new graphical campaign at normal 60 Hz
+completed all three chapters and beat Old Croak with stomps: **01:33, zero
+retries, three hearts, 42/72 gems, all nine acorns, and all three fireflies**.
+This run used only movement, jump, and menu inputs from the title to the ending.
+
+A separate graphical fixture prepared the final arena and earned equipment.
+Normal controls then defeated Old Croak with **three arrows**, retried with R,
+paused and resumed during that retry, walked left into the gap for a real fall,
+and reached the final gate after the second retry. Both retries retained boss
+defeat, acorns, equipment, and the open exit. This fixture's 00:13 result is not
+a complete-campaign time and was saved only in a temporary directory.
+
+Native XTest fixtures exercised Shift into the real mushroom and a protected
+critter stomp while releasing a held jump after the bounce. The mushroom
+produced upward movement with one air jump; the critter was defeated without
+spending armor or triggering a retry. Both screenshots were visually inspected.
+The graphical runs logged only expected software-display input-method/VSync
+warnings. Test processes and saves were cleaned up, preserving the user's two
+existing game windows.
+
+- [Stomp campaign ending](screenshots/audit-stomp-victory.png)
+- [Arrow victory before retry](screenshots/audit-boss-defeated.png)
+- [Checkpoint after a post-victory fall](screenshots/audit-post-victory-checkpoint.png)
+- [Mushroom launching during a dash](screenshots/audit-mushroom.png)
 
 ## Graphical and native input evidence
 

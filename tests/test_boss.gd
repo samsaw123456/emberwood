@@ -23,6 +23,7 @@ func _run() -> void:
 	Engine.physics_ticks_per_second = 180
 	await _test_waiting_and_telegraph()
 	await _test_damage_and_reset()
+	await _test_visible_cap_stomps()
 	await _test_arrows()
 	await _test_input_battle()
 	_release()
@@ -166,6 +167,51 @@ func _test_arrows() -> void:
 		_check(boss.arrow_hit(), "Each later opening accepts an arrow.")
 	_check(boss.defeated and victory_count == 1, "Three arrows can finish the encounter.")
 	_check(not boss.arrow_hit() and boss.health == 0, "A defeated boss rejects extra damage.")
+
+
+func _test_visible_cap_stomps() -> void:
+	_make_fixture()
+	boss.engaged = true
+	boss.phase = "rest"
+	# Contact the gold leaf near the end of the opening. The old body-only
+	# check waited for the fox to sink through it, then wrongly closed the cap.
+	boss.phase_time = 2.04
+	fox.reset_at(boss.position + Vector2(24, -92))
+	fox.velocity.y = 100
+	await _step(3)
+	_check(boss.health == 2, "Landing on the visible gold leaf counts before the window closes.")
+	_check(hit_count == 0, "A valid cap landing does not hurt the fox instead.")
+	_check(fox.velocity.y < -400, "The cap stomp launches the fox clear of the boss.")
+	_make_fixture()
+	boss.engaged = true
+	boss.phase = "rest"
+	fox.reset_at(boss.position + Vector2(0, -100))
+	fox.velocity.y = 900
+	await _step(2)
+	_check(boss.health == 2, "A fast descent cannot skip through the gold cap.")
+	_make_fixture()
+	boss.engaged = true
+	boss.phase = "rest"
+	fox.reset_at(boss.position + Vector2(55, -65))
+	fox.velocity.y = 100
+	Input.action_press(&"move_left")
+	await _step(8)
+	_release()
+	_check(boss.health == 3, "Descending into the boss from the side is not a head stomp.")
+	_check(hit_count > 0, "The boss body still reports damaging side contact.")
+	_make_fixture()
+	boss.engaged = true
+	boss.phase = "rest"
+	fox.reset_at(boss.position + Vector2(0, -35))
+	fox.velocity.y = -100
+	await _step(3)
+	_check(boss.health == 3, "Rising into the cap from underneath cannot count as a stomp.")
+	_make_fixture()
+	boss.begin()
+	fox.reset_at(boss.position + Vector2(0, -100))
+	fox.velocity.y = 250
+	await _step(12)
+	_check(boss.health == 3 and hit_count > 0, "Landing on a guarded cap still requires waiting.")
 
 
 func _test_input_battle() -> void:

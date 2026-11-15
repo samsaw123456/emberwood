@@ -31,6 +31,7 @@ func _run() -> void:
 	await _test_pause_during_retry()
 	await _test_chapters_and_boss()
 	await _test_settings_reload()
+	await _test_save_merging()
 	game.queue_free()
 	await process_frame
 	if failures.is_empty():
@@ -261,6 +262,7 @@ func _test_chapters_and_boss() -> void:
 	await _finish_boss_by_stomping()
 	_check(game.level.gate_open, "Defeating Old Croak opens the final gate.")
 	_check(not is_instance_valid(game.arena_wall), "Defeat removes the arena barrier.")
+	await _test_defeated_boss_retry()
 	game.fox.reset_at(game.level.gate)
 	await _step(3)
 	_check(game.state == Adventure.State.WON, "The cleared gate finishes the full campaign.")
@@ -375,6 +377,38 @@ func _finish_boss_by_stomping() -> void:
 	_check(game.boss.defeated, "Three real stomp contacts defeat the boss.")
 
 
+func _test_defeated_boss_retry() -> void:
+	var retries: int = game.deaths
+	_key(KEY_R, true)
+	_key(KEY_R, false)
+	await _step(2)
+	_check(game.state == Adventure.State.RESPAWNING, "R still retries after defeating the boss.")
+	await _step(55)
+	_check(game.deaths == retries + 1, "The completed-fight retry is counted once.")
+	_check(game.boss.defeated and game.boss.health == 0, "Retry preserves the defeated boss.")
+	_check(game.level.gate_open, "Retry cannot relock an earned final gate.")
+	_check(not game.boss.engaged, "Retry does not restart a completed encounter.")
+	_check(not is_instance_valid(game.arena_wall), "Retry keeps the completed arena open.")
+	_check(
+		not game.hud._boss_band.visible, "A completed encounter keeps its health display hidden."
+	)
+	# Fall through the real gap just left of the now-open arena; do not call respawn.
+	game.fox.reset_at(Vector2(2470, ForestLevel.FLOOR_Y))
+	for frame in 120:
+		await _step(1)
+		if game.state == Adventure.State.RESPAWNING:
+			break
+	_check(
+		game.state == Adventure.State.RESPAWNING, "Backtracking into the gap causes a real fall."
+	)
+	await _step(55)
+	_check(game.deaths == retries + 2, "The post-victory fall counts as a retry.")
+	_check(game.boss.defeated and game.boss.health == 0, "A fall also preserves boss completion.")
+	_check(game.level.gate_open and not game.boss.engaged, "The path remains clear after the fall.")
+	_check(not is_instance_valid(game.arena_wall), "The boss barrier stays removed after the fall.")
+	_check(game.player_health == 3, "The checkpoint still restores the fox's hearts.")
+
+
 func _test_settings_reload() -> void:
 	_press_button("Ⅱ")
 	var sound_button := _find_button(game.hud, "Sound") as CheckButton
@@ -414,6 +448,108 @@ func _test_settings_reload() -> void:
 	_press_button("Start adventure")
 	_check(game.level.taken_acorns.is_empty(), "A new session starts a fresh adventure.")
 	_check(game.sound.muted and game.reduced_motion, "A new run keeps saved preferences.")
+
+
+func _test_save_merging() -> void:
+	var config := ConfigFile.new()
+	config.set_value("game", "campaign_best_time", 0.0)
+	config.set_value("settings", "muted", false)
+	config.set_value("settings", "reduced_motion", false)
+	config.set_value("future_options", "keep_me", "unchanged")
+	_check(config.save(Adventure.SAVE_PATH) == OK, "The two-window save fixture is written.")
+	var older: Node2D = MAIN.instantiate()
+	root.add_child(older)
+	var newer: Node2D = MAIN.instantiate()
+	root.add_child(newer)
+	await _step(2)
+	newer.best_time = 91.0
+	newer._save_settings()
+	newer._toggle_motion(true)
+	older._toggle_sound(true)
+	_check(config.load(Adventure.SAVE_PATH) == OK, "The shared save remains readable.")
+	_check(
+		config.get_value("game", "campaign_best_time") == 91.0,
+		"An older window cannot erase a newer best time."
+	)
+	_check(older.best_time == 91.0, "Saving also refreshes the older window's best time.")
+	_check(config.get_value("settings", "muted"), "The requested mute change is saved.")
+	_check(
+		config.get_value("settings", "reduced_motion"),
+		"Changing sound preserves another window's motion choice."
+	)
+	older.best_time = 80.0
+	older._save_settings()
+	_check(config.load(Adventure.SAVE_PATH) == OK, "A new winning time is saved.")
+	_check(
+		config.get_value("game", "campaign_best_time") == 80.0,
+		"A faster new record replaces the previous record."
+	)
+	_check(
+		config.get_value("settings", "reduced_motion"),
+		"Saving a win cannot overwrite stale preferences."
+	)
+	newer._toggle_motion(false)
+	_check(config.load(Adventure.SAVE_PATH) == OK, "The second preference change is saved.")
+	_check(
+		config.get_value("game", "campaign_best_time") == 80.0,
+		"A stale slower record cannot replace a faster one."
+	)
+	_check(
+		config.get_value("settings", "muted"),
+		"Changing motion preserves another window's mute choice."
+	)
+	_check(
+		not config.get_value("settings", "reduced_motion"), "The requested motion change is saved."
+	)
+	_check(
+		config.get_value("future_options", "keep_me") == "unchanged",
+		"Saving preserves unfamiliar configuration keys."
+	)
+	older.queue_free()
+	newer.queue_free()
+	await process_frame
+	await _test_save_creation_and_failure()
+
+
+func _test_save_creation_and_failure() -> void:
+	var save_path := ProjectSettings.globalize_path(Adventure.SAVE_PATH)
+	_check(DirAccess.remove_absolute(save_path) == OK, "The isolated save fixture can be reset.")
+	game.sound.muted = true
+	game.reduced_motion = true
+	game._save_settings()
+	var valid_config := ConfigFile.new()
+	_check(valid_config.load(Adventure.SAVE_PATH) == OK, "A first save creates valid settings.")
+	_check(
+		valid_config.get_value("settings", "muted"),
+		"A first save initializes current sound preferences."
+	)
+	_check(
+		valid_config.get_value("settings", "reduced_motion"),
+		"A first save initializes current motion preferences."
+	)
+	var invalid_contents := "[settings\nmuted=true\n"
+	var invalid_file := FileAccess.open(Adventure.SAVE_PATH, FileAccess.WRITE)
+	invalid_file.store_string(invalid_contents)
+	invalid_file.close()
+	# A deliberately malformed fixture must be rejected without noisy parser diagnostics.
+	var errors_enabled := Engine.print_error_messages
+	Engine.print_error_messages = false
+	_key(KEY_M, true)
+	_key(KEY_M, false)
+	await process_frame
+	Engine.print_error_messages = errors_enabled
+	_check(not game.sound.muted, "M still changes sound when its preference cannot be saved.")
+	_check(
+		FileAccess.get_file_as_string(Adventure.SAVE_PATH) == invalid_contents,
+		"An unreadable save is never overwritten by a preference toggle."
+	)
+	_check(
+		game.hud._toast_label.text.contains("existing save was left unchanged"),
+		"The M key's sound feedback does not hide the save failure message."
+	)
+	_check(
+		valid_config.save(Adventure.SAVE_PATH) == OK, "The test restores its valid isolated save."
+	)
 
 
 func _touch(point: Vector2) -> void:

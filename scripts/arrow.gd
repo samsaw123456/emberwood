@@ -66,10 +66,11 @@ func _physics_process(delta: float) -> void:
 			target = "critter"
 			hit_critter = critter
 	if is_instance_valid(_boss) and not _boss.defeated:
-		var entry := _entry_distance(_boss.body_bounds(), start, distance)
-		if entry < nearest:
-			nearest = entry
-			target = "boss"
+		for bounds in _boss.projectile_bounds():
+			var entry := _entry_distance(bounds, start, distance)
+			if entry < nearest:
+				nearest = entry
+				target = "boss"
 	if not target.is_empty():
 		global_position = start + Vector2(_direction * nearest, 0)
 		_spent = true

@@ -56,11 +56,12 @@ across retries and levels. A later checkpoint also awards earlier rewards you
 missed. Restarting the adventure clears equipment along with the level progress.
 
 Old Croak marks where he will land before he leaps. Avoid the landing spot and
-jump over the ripples. When he rests and his cap turns gold, land on his head.
+jump over the ripples. When he rests and his cap turns gold, double-jump onto it.
 You can also **shoot him while he rests**. **Three hits**, one per opening, let
-you pass. The fox has **three hearts** during this
-encounter. Losing them returns you to the nearby campfire and resets the fight,
-including Old Croak's health. Your collected acorns and gems remain collected.
+you pass. The fox has **three hearts** during this encounter. Losing them before
+victory returns you to the nearby campfire and resets the fight, including Old
+Croak's health. Once defeated, he stays defeated through retries and falls, and
+the final gate stays open. Your collected acorns and gems remain collected.
 
 Choose **Restart all chapters** in the pause menu to begin again from the forest.
 **Gentle motion** in the title or pause menu reduces decorative movement and
@@ -106,7 +107,7 @@ gdlint scripts tests
 ruff check tools/run_game_tests.py
 ruff format --check tools/run_game_tests.py
 
-# Fox, platform, boss, arrows, game state, equipment, and campaign suites.
+# Fox, platform, boss, arrows, game state, equipment, interactions, and routes.
 # Each suite uses temporary saved data and cleans it up afterward.
 python3 tools/run_game_tests.py
 
@@ -121,6 +122,8 @@ campaign best-time key is `game/campaign_best_time` in `user://emberwood.cfg`.
 
 See [playtest notes](docs/PLAYTEST.md) for verification and screenshots, and
 [visual direction](docs/DESIGN.md) for the pixel title and readable game interface.
+The [combat and progression audit](docs/AUDIT.md) records the boss fixes and
+related interaction checks.
 
 ## Credits
 

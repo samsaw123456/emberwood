@@ -82,8 +82,8 @@ func _input(event: InputEvent) -> void:
 	elif event.is_action_pressed("retry") and state == State.PLAYING:
 		_respawn("Back to your campfire")
 	elif event.is_action_pressed("mute"):
+		hud.toast("Sound off" if not sound.muted else "Sound on")
 		_toggle_sound(not sound.muted)
-		hud.toast("Sound off" if sound.muted else "Sound on")
 
 
 func _notification(what: int) -> void:
@@ -249,12 +249,10 @@ func _check_hazards() -> void:
 	if fox.position.y > 730:
 		_respawn("A little tumble. Try that jump again!")
 		return
-	if invincible_left > 0:
-		return
 	var bounds := fox.body_bounds()
 	for spike in level.spikes:
 		# Inset the rectangular artwork so brushing a triangle's corner is forgiving.
-		if bounds.intersects(spike.grow(-3)):
+		if invincible_left <= 0 and bounds.intersects(spike.grow(-3)):
 			if _absorb_hit():
 				return
 			_respawn("Ouch! Jump over the spikes.")
@@ -266,11 +264,10 @@ func _check_hazards() -> void:
 		if bounds.intersects(level.critter_bounds(critter)):
 			if fox.velocity.y > 40 and fox.position.y < pos.y - 12:
 				critter.out = true
-				fox.velocity.y = -440
-				fox.jumps_left = 1
+				fox.bounce(-440)
 				_burst(pos - Vector2(0, 20), Color("d7b2df"), 12)
 				sound.play("bounce")
-			else:
+			elif invincible_left <= 0:
 				if _absorb_hit():
 					return
 				_respawn("Boop! Hop over critters, or bounce on top.")
@@ -314,8 +311,7 @@ func _check_platforms() -> void:
 	for mushroom in level.mushrooms:
 		if mushroom_cooldown <= 0 and fox.velocity.y >= 0:
 			if absf(fox.position.x - mushroom.x) < 32 and fox.position.y > mushroom.y - 28:
-				fox.velocity.y = -770
-				fox.jumps_left = 1
+				fox.bounce(-770)
 				mushroom_cooldown = 0.3
 				_burst(mushroom - Vector2(0, 25), Color("f8b5d5"), 18)
 				sound.play("bounce")
@@ -358,10 +354,12 @@ func _respawn(message: String) -> void:
 func _finish_respawn() -> void:
 	level.reset_hazards()
 	if is_instance_valid(boss):
-		boss.reset_battle()
-		boss_started = false
 		player_health = 3
-		level.gate_open = false
+		# A finished encounter is earned progress, like collected acorns.
+		if not boss.defeated:
+			boss.reset_battle()
+			boss_started = false
+		level.gate_open = boss.defeated
 		if is_instance_valid(arena_wall):
 			arena_wall.queue_free()
 			arena_wall = null
@@ -450,7 +448,7 @@ func _toggle_sound(value: bool) -> void:
 	hud.muted = value
 	if value:
 		sound.stop()
-	_save_settings()
+	_save_settings(&"muted")
 
 
 func _toggle_motion(value: bool) -> void:
@@ -463,7 +461,7 @@ func _toggle_motion(value: bool) -> void:
 		boss.reduced_motion = value
 	if value:
 		particles.clear()
-	_save_settings()
+	_save_settings(&"reduced_motion")
 
 
 func _load_settings() -> void:
@@ -474,7 +472,8 @@ func _load_settings() -> void:
 	if error != OK:
 		push_warning("Could not read Emberwood settings; using defaults.")
 		return
-	best_time = maxf(0, float(config.get_value("game", "campaign_best_time", 0.0)))
+	var saved_best := float(config.get_value("game", "campaign_best_time", 0.0))
+	best_time = saved_best if is_finite(saved_best) and saved_best > 0.0 else 0.0
 	sound.muted = bool(config.get_value("settings", "muted", false))
 	hud.muted = sound.muted
 	reduced_motion = bool(config.get_value("settings", "reduced_motion", false))
@@ -486,11 +485,25 @@ func _load_settings() -> void:
 		boss.reduced_motion = reduced_motion
 
 
-func _save_settings() -> void:
+func _save_settings(changed_setting: StringName = &"") -> void:
 	var config := ConfigFile.new()
+	var error := config.load(SAVE_PATH)
+	if error != OK and error != ERR_FILE_NOT_FOUND:
+		hud.toast("Couldn't read saved settings. Your existing save was left unchanged.")
+		return
+	# Another open window may have earned a faster time or changed another setting.
+	var saved_best := float(config.get_value("game", "campaign_best_time", 0.0))
+	if is_finite(saved_best) and saved_best > 0.0:
+		if best_time <= 0.0 or saved_best < best_time:
+			best_time = saved_best
 	config.set_value("game", "campaign_best_time", best_time)
-	config.set_value("settings", "muted", sound.muted)
-	config.set_value("settings", "reduced_motion", reduced_motion)
+	if changed_setting == &"muted" or not config.has_section_key("settings", "muted"):
+		config.set_value("settings", "muted", sound.muted)
+	if (
+		changed_setting == &"reduced_motion"
+		or not config.has_section_key("settings", "reduced_motion")
+	):
+		config.set_value("settings", "reduced_motion", reduced_motion)
 	if config.save(SAVE_PATH) != OK:
 		hud.toast("Couldn't save settings. You can still keep playing.")
 
@@ -498,7 +511,12 @@ func _save_settings() -> void:
 func _update_boss_encounter() -> void:
 	if not is_instance_valid(boss):
 		return
-	if not boss_started and fox.position.x >= 2630 and level.taken_acorns.size() == 3:
+	if (
+		not boss_started
+		and not boss.defeated
+		and fox.position.x >= 2630
+		and level.taken_acorns.size() == 3
+	):
 		boss_started = true
 		player_health = 3
 		_activate_camp(level.camps.size() - 1)

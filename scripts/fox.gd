@@ -45,12 +45,13 @@ var armor_charged := false:
 
 var _coyote_left := 0.0
 var _jump_buffer_left := 0.0
+var _jump_cut_available := false
 var _ignore_jump_until_release := false
 var _ignore_dash_until_release := false
 var _air_dash_available := true
 var _dash_direction := 1
 var _gear_art: Node2D
-var _just_reset := true
+var _discard_floor_contact := true
 
 
 func _ready() -> void:
@@ -76,8 +77,8 @@ func _physics_process(delta: float) -> void:
 	if not active:
 		return
 	dash_cooldown_left = maxf(0.0, dash_cooldown_left - delta)
-	# Floor contact belongs to the previous slide, so discard it after teleporting.
-	var grounded := is_on_floor() and not _just_reset
+	# A teleport or external bounce invalidates the previous slide's floor contact.
+	var grounded := is_on_floor() and not _discard_floor_contact
 	if grounded:
 		_coyote_left = COYOTE_TIME
 		jumps_left = 2
@@ -109,8 +110,10 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2(_dash_direction * DASH_SPEED * minf(1.0, dash_left / delta), 0.0)
 	else:
 		velocity.x = move_toward(velocity.x, direction * RUN_SPEED, acceleration * delta)
-	if Input.is_action_just_released("jump") and velocity.y < 0.0:
-		velocity.y *= 0.45
+	if Input.is_action_just_released("jump"):
+		if _jump_cut_available and velocity.y < 0.0:
+			velocity.y *= 0.45
+		_jump_cut_available = false
 	move_and_slide()
 	if dash_left > 0.0:
 		dash_left = 0.0 if is_on_wall() else maxf(0.0, dash_left - delta)
@@ -118,7 +121,7 @@ func _physics_process(delta: float) -> void:
 			velocity.x = clampf(velocity.x, -RUN_SPEED, RUN_SPEED)
 	if is_on_floor() and not grounded and velocity.y >= 0.0:
 		landed.emit()
-	_just_reset = false
+	_discard_floor_contact = false
 	_update_animation()
 	_redraw_gear()
 	queue_redraw()
@@ -134,10 +137,11 @@ func reset_at(location: Vector2) -> void:
 	facing = 1
 	_coyote_left = 0.0
 	_jump_buffer_left = 0.0
+	_jump_cut_available = false
 	dash_left = 0.0
 	dash_cooldown_left = 0.0
 	_air_dash_available = true
-	_just_reset = true
+	_discard_floor_contact = true
 	# Holding jump through a retry must not turn into a new jump on respawn.
 	_ignore_jump_until_release = Input.is_action_pressed("jump")
 	_ignore_dash_until_release = Input.is_action_pressed("dash")
@@ -151,6 +155,16 @@ func reset_at(location: Vector2) -> void:
 
 func can_dash() -> bool:
 	return active and dash_left <= 0.0 and dash_cooldown_left <= 0.0 and _air_dash_available
+
+
+func bounce(speed: float) -> void:
+	velocity.y = speed
+	jumps_left = 1
+	_coyote_left = 0.0
+	_jump_buffer_left = 0.0
+	_jump_cut_available = false
+	dash_left = 0.0
+	_discard_floor_contact = true
 
 
 func body_bounds() -> Rect2:
@@ -175,6 +189,7 @@ func _start_jump(double_jump: bool) -> void:
 	jumps_left -= 1
 	_coyote_left = 0.0
 	_jump_buffer_left = 0.0
+	_jump_cut_available = true
 	jumped.emit(double_jump)
 
 

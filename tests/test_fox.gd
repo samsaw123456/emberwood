@@ -51,12 +51,16 @@ func _run() -> void:
 	await _test_dash_wall()
 	await _test_dash_jump()
 	await _test_dash_tick_rates()
+	await _test_bounce_budget()
+	await _test_bounce_during_dash_and_pause()
+	await _test_jump_release_after_bounce()
 	_release_inputs()
 	if failures.is_empty():
 		print("PASS: fox physics, movement, double-jump limit, reset, pause, jump height, ")
 		print(
 			"      coyote/buffered jumps, dash distance, cooldown, air limit, pause, reset and walls."
 		)
+		print("      Grounded/airborne bounces, jump budget, dash interruption and pause.")
 		quit(0)
 	else:
 		for failure: String in failures:
@@ -266,6 +270,87 @@ func _test_dash_tick_rates() -> void:
 		var distance := fox.position.x - start
 		_check(absf(distance - 99.2) < 1.0, "Dash keeps its travel distance at %d Hz." % rate)
 	Engine.physics_ticks_per_second = initial_rate
+
+
+func _test_bounce_budget() -> void:
+	for grounded in [true, false]:
+		await _reset()
+		if not grounded:
+			fox.reset_at(Vector2(300, 240))
+			fox.velocity.y = 300.0
+			await _step(2)
+		var start_y := fox.position.y
+		fox.bounce(-770.0)
+		await _step(1)
+		_check(fox.position.y < start_y - 10.0, "A bounce launches from ground or descending air.")
+		_check(fox.jumps_left == 1, "Every bounce leaves exactly one air jump.")
+		Input.action_press(&"jump")
+		await _step(1)
+		_check(
+			fox.jumps_left == 0 and fox.velocity.y < -470.0,
+			"A quick press after a bounce spends the single air jump."
+		)
+		Input.action_release(&"jump")
+		await _step(1)
+		var previous_velocity := fox.velocity.y
+		Input.action_press(&"jump")
+		await _step(1)
+		_check(
+			fox.jumps_left == 0 and fox.velocity.y > previous_velocity,
+			"Stale ground contact cannot provide a second jump after a bounce."
+		)
+
+
+func _test_bounce_during_dash_and_pause() -> void:
+	await _reset(Vector2(300, -500))
+	Input.action_press(&"move_left")
+	await _step(2)
+	Input.action_press(&"dash")
+	await _step(2)
+	_check(fox.dash_left > 0.0, "The bounce probe starts during an active air dash.")
+	var horizontal_speed := fox.velocity.x
+	var cooldown := fox.dash_cooldown_left
+	fox.bounce(-770.0)
+	_check(
+		fox.velocity.x == horizontal_speed and fox.facing == -1,
+		"Bouncing preserves horizontal momentum and facing."
+	)
+	_check(fox.dash_left == 0.0, "A bounce interrupts the horizontal dash.")
+	fox.active = false
+	var position := fox.position
+	await _step(5)
+	_check(fox.position == position and fox.velocity.y == -770.0, "Pause freezes a pending bounce.")
+	_check(fox.dash_cooldown_left == cooldown, "Pause preserves the interrupted dash cooldown.")
+	fox.active = true
+	await _step(2)
+	_check(
+		fox.position.y < position.y - 20.0, "Resume applies the upward bounce instead of a dash."
+	)
+	Input.action_release(&"dash")
+	await _step(40)
+	_check(not fox.can_dash(), "A bounce does not restore an already spent airborne dash.")
+
+
+func _test_jump_release_after_bounce() -> void:
+	await _reset()
+	Input.action_press(&"jump")
+	await _step(3)
+	fox.bounce(-770.0)
+	await _step(2)
+	Input.action_release(&"jump")
+	await _step(1)
+	_check(
+		fox.velocity.y < -650.0, "Releasing the previous jump cannot shorten an external bounce."
+	)
+	Input.action_press(&"jump")
+	await _step(1)
+	_check(fox.velocity.y < -470.0, "The remaining air jump can replace the bounce ascent.")
+	Input.action_release(&"jump")
+	await _step(1)
+	_check(
+		fox.velocity.y > -300.0 and fox.velocity.y < 0.0,
+		"Releasing a new player-initiated air jump still produces a short jump."
+	)
 
 
 func _reset(location := Vector2(100.0, 320.0)) -> void:

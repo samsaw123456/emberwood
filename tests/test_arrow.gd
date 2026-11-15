@@ -30,6 +30,7 @@ func _run() -> void:
 	await _test_terrain_priority()
 	await _test_moving_and_collapsed_terrain()
 	await _test_boss_collision()
+	await _test_visible_boss_cap()
 	if is_instance_valid(world):
 		world.queue_free()
 	if failures.is_empty():
@@ -209,9 +210,40 @@ func _test_boss_collision() -> void:
 
 
 func _step(frames: int) -> void:
+	# Unit flight timing follows physics ticks; a delayed render frame can run
+	# several extra simulation ticks before process_frame is emitted.
 	for frame in frames:
 		await physics_frame
-	await process_frame
+
+
+func _test_visible_boss_cap() -> void:
+	for phase in ["rest", "warning"]:
+		# These offsets are actual visible points: the bright center strip and
+		# the leaf tip. Both lie above the ordinary body rectangle.
+		for offset in [-75.0, -91.0]:
+			_new_world()
+			var boss := ForestBoss.new()
+			boss.position = Vector2(200, 130)
+			world.add_child(boss)
+			boss.active = true
+			boss.engaged = true
+			boss.phase = phase
+			var cap_y: float = offset if phase == "rest" else offset + 7
+			_shoot(Vector2(0, boss.position.y + cap_y), 1, boss)
+			await _step(20)
+			_check(impacts.size() == 1, "An arrow cannot pass through the visible %s cap." % phase)
+			if phase == "rest":
+				_check(boss.health == 2, "A gold cap arrow counts without hitting the lower body.")
+				_check(
+					impacts.size() == 1 and impacts[0].target == "boss",
+					"A gold cap reports a boss hit."
+				)
+			else:
+				_check(boss.health == 3, "A guarded cap blocks the arrow without losing health.")
+				_check(
+					impacts.size() == 1 and impacts[0].target == "blocked",
+					"The guarded cap reports a blocked shot."
+				)
 
 
 func _check(condition: bool, message: String) -> void:
