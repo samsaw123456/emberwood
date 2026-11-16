@@ -10,7 +10,7 @@ from pathlib import Path
 
 from install_app import desktop_entry
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -94,13 +94,14 @@ def main() -> None:
             "A/D: move; Space: jump twice; Shift: dash; J: weapon; Esc: gear/pause; R: retry.\n"
             "Collect three acorns per level. Earn equipment at campfires.\n"
             "LAN co-op: Host a game, then join its address on the same network.\n"
+            "Cross-compatible between Linux and macOS on the same game version.\n"
             "Source and full illustrated guides: https://github.com/samsaw123456/emberwood\n"
             "Code license: copyright. Art: assets/CREDITS.md and assets/licenses/.\n"
             "Fonts: assets/fonts/LICENSE.txt. Engine: packaging/licenses/.\n",
         )
         (documentation / "changelog.gz").write_bytes(
             gzip.compress(
-                f"Emberwood {VERSION}: add local 2-4 player LAN co-op.\n".encode(),
+                f"Emberwood {VERSION}: add macOS downloads and Linux/macOS LAN compatibility.\n".encode(),
                 mtime=0,
             )
         )
@@ -164,7 +165,16 @@ def main() -> None:
         )
     with package.open("rb") as artifact:
         digest = hashlib.file_digest(artifact, "sha256").hexdigest()
-    (output / "SHA256SUMS").write_text(f"{digest}  {package.name}\n")
+    sums = output / "SHA256SUMS"
+    lines = []
+    if sums.exists():
+        lines = [
+            line
+            for line in sums.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.endswith(f"  {package.name}")
+        ]
+    lines.append(f"{digest}  {package.name}")
+    sums.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(package)
 
 

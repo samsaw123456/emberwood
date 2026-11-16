@@ -1,7 +1,7 @@
 # LAN co-op
 
-Emberwood 1.4.0 adds **2–4 players, with one computer per player**. Each computer
-runs the original graphical game. Solo play is still available.
+Emberwood adds **2–4 players, with one computer per player** (available since 1.4.0).
+Each computer runs the original graphical game. Solo play is still available.
 
 1. Install the same Emberwood version on every computer and connect to the same
    Wi-Fi or wired network.
@@ -17,6 +17,11 @@ error returns to a usable menu; open LAN co-op to try again. The host must still
 be in the lobby, with an available player slot. Firewall rules must allow the
 game's UDP port **24642** on the local network. Networks that isolate wireless
 clients can prevent computers from connecting. No internet account is required.
+
+LAN play is designed to be cross-compatible between Linux and macOS when every
+computer runs the same Emberwood version and protocol. Keep all players on the
+same release when joining a session. Physical cross-platform network testing
+should be recorded when performed.
 
 ## Team rules
 

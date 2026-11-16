@@ -85,6 +85,7 @@ func _ready() -> void:
 	_load_settings()
 	hud.show_title(best_time)
 	_refresh_hud()
+	_maybe_offer_macos_applications_install()
 
 
 func _input(event: InputEvent) -> void:
@@ -768,3 +769,76 @@ func set_arena_wall(present: bool) -> void:
 	elif not present and is_instance_valid(arena_wall):
 		arena_wall.queue_free()
 		arena_wall = null
+
+
+func _maybe_offer_macos_applications_install() -> void:
+	if OS.get_name() != "macOS" or OS.has_feature("editor"):
+		return
+	var bundle_path := _macos_app_bundle_path()
+	if bundle_path.is_empty():
+		return
+	var normalized := bundle_path.simplify_path()
+	var home_apps := (OS.get_environment("HOME") + "/Applications/").simplify_path()
+	if normalized.begins_with("/Applications/") or normalized.begins_with(home_apps):
+		return
+	var dialog := ConfirmationDialog.new()
+	dialog.title = "Install Emberwood"
+	dialog.dialog_text = "Would you like to put Emberwood in the Applications folder?"
+	dialog.ok_button_text = "Move to Applications"
+	dialog.cancel_button_text = "Not now"
+	dialog.confirmed.connect(func() -> void: _install_macos_application(bundle_path))
+	add_child(dialog)
+	dialog.popup_centered()
+
+
+func _macos_app_bundle_path() -> String:
+	var executable := OS.get_executable_path()
+	if executable.is_empty():
+		return ""
+	var bundle := executable.get_base_dir().get_base_dir().get_base_dir()
+	if bundle.get_extension() != "app":
+		return ""
+	return bundle
+
+
+func _install_macos_application(bundle_path: String) -> void:
+	var bundle_name := bundle_path.get_file()
+	var candidates: Array[String] = ["/Applications/" + bundle_name]
+	var home := OS.get_environment("HOME")
+	if not home.is_empty():
+		candidates.append(home.path_join("Applications").path_join(bundle_name))
+	for target in candidates:
+		var target_dir := target.get_base_dir()
+		if not DirAccess.dir_exists_absolute(target_dir):
+			var make_err := DirAccess.make_dir_recursive_absolute(target_dir)
+			if make_err != OK:
+				continue
+		if DirAccess.dir_exists_absolute(target) or FileAccess.file_exists(target):
+			OS.shell_open(target.get_base_dir())
+			_show_macos_install_message(
+				"An Emberwood app is already in " + target_dir + ". Open it from there."
+			)
+			return
+		var output: Array = []
+		var exit_code := OS.execute("ditto", [bundle_path, target], output, true)
+		if exit_code != OK:
+			exit_code = OS.execute("cp", ["-R", bundle_path, target], output, true)
+		if exit_code == OK:
+			OS.shell_open(target_dir)
+			_show_macos_install_message(
+				"Emberwood was copied to " + target_dir + ". Please open it from there."
+			)
+			return
+	_show_macos_install_message(
+		"Could not copy Emberwood to Applications. You can move the app there manually."
+	)
+
+
+func _show_macos_install_message(message: String) -> void:
+	var dialog := AcceptDialog.new()
+	dialog.title = "Emberwood"
+	dialog.dialog_text = message
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.canceled.connect(dialog.queue_free)
+	add_child(dialog)
+	dialog.popup_centered()

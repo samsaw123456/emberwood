@@ -60,10 +60,11 @@ when you retry. There are 15 additional patrols across levels 6–20.
 
 ## Play
 
-For other Linux players, the [downloadable installer](https://github.com/samsaw123456/emberwood/releases/latest)
-includes the game engine and adds Emberwood to the Applications launcher after
-installation. It supports x86-64 Ubuntu/Debian desktops. See
-[installer instructions](packaging/README.md).
+For other players, [download Emberwood for Linux or macOS](https://github.com/samsaw123456/emberwood/releases/latest).
+The Linux package adds Emberwood to the Applications launcher (x86-64 Ubuntu/Debian);
+the macOS zip contains the app bundle. Both include the game engine and play
+offline after installation. LAN co-op works across Linux and macOS on the same
+game version. See [download/installer instructions](packaging/README.md).
 
 On this computer, open **Applications** and search for **Emberwood**. Its icon
 shows the fox in a forest. This shortcut launches the game in `~/git/aie` and

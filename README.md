@@ -1,9 +1,10 @@
-> **Play Emberwood:** [Download the Linux installer](https://github.com/samsaw123456/emberwood/releases/latest). Install it once to add Emberwood to your Applications launcher, ready to play offline. See [installer details](packaging/README.md) or [game instructions](GAME.md). Developers can open [project.godot](project.godot) in Godot and press Play.
+> **Play Emberwood:** [Download for Linux or macOS](https://github.com/samsaw123456/emberwood/releases/latest). Install it once to play offline. See [download/installer details](packaging/README.md) or [game instructions](GAME.md). Developers can open [project.godot](project.godot) in Godot and press Play.
 
 Emberwood has **20 levels, 6 animal bosses, 5 weapons, 8 armor sets, and 2–4 player LAN co-op**.
 Choose **LAN co-op** on the title screen. One player hosts; everyone else enters
-the host's address on the same Wi-Fi or wired network. Install version 1.4.0 on
-every computer. [Co-op rules and connection help](docs/LAN.md).
+the host's address on the same Wi-Fi or wired network. Install the same version
+(1.5.0 or newer) on every computer. LAN co-op is designed to be cross-compatible
+between Linux and macOS on the same game version. [Co-op rules and connection help](docs/LAN.md).
 Ordinary enemies include opossums, hopping slimes, beetles and bats.
 Meet a boss every third level: [guardian roster](docs/BOSSES.md).
 
